@@ -1,6 +1,6 @@
 // claudeAI.js — OpenRouter API Integration
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const MODEL = 'google/gemini-2.0-flash-001' // Using Gemini Flash via OpenRouter
+const MODEL = 'openrouter/free' // Using OpenRouter auto-routed free model
 
 function getApiKey() {
   return import.meta.env.VITE_OPENROUTER_API_KEY || import.meta.env.VITE_ANTHROPIC_API_KEY || ''
