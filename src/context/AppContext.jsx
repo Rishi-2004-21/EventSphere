@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import { nanoid } from 'nanoid';
+import { supabase } from '../supabase';
 import {
   SEED_USERS,
   SEED_EVENTS,
@@ -252,8 +253,47 @@ function appReducer(state, action) {
 
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const [authLoading, setAuthLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const savedUser = localStorage.getItem('eventsphere_user');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        dispatch({ type: 'LOGIN', payload: user });
+      } catch (e) {
+        localStorage.removeItem('eventsphere_user');
+      }
+    }
+    setAuthLoading(false);
+  }, []);
+
+  const loginUser = async (email, password) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .eq('password', password)
+      .single();
+      
+    if (error || !data) {
+      console.log("Supabase login error:", error);
+      return { success: false, error: 'Invalid email or password' };
+    }
+    
+    console.log("Fetched user from Supabase:", data);
+    localStorage.setItem('eventsphere_user', JSON.stringify(data));
+    dispatch({ type: 'LOGIN', payload: data });
+    return { success: true, user: data };
+  };
+
+  const logoutUser = () => {
+    localStorage.removeItem('eventsphere_user');
+    dispatch({ type: 'LOGOUT' });
+  };
+
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <AppContext.Provider value={{ state, dispatch, loginUser, logoutUser, authLoading }}>
       {children}
     </AppContext.Provider>
   );

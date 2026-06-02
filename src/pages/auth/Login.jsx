@@ -5,30 +5,34 @@ import { Zap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Login() {
-  const { state, dispatch } = useApp();
+  const { state, loginUser } = useApp();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const user = state.usersStore.find(
-      (u) => u.email === form.email && u.password === form.password
-    );
-    setTimeout(() => {
-      if (user) {
-        dispatch({ type: 'LOGIN', payload: user });
-        toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
-        if (user.role === 'admin') navigate('/admin');
-        else if (user.role === 'organizer') navigate('/organizer');
-        else navigate('/events');
-      } else {
-        toast.error('Invalid email or password');
-        setLoading(false);
+    
+    const result = await loginUser(form.email, form.password);
+    
+    if (result.success) {
+      const user = result.user;
+      toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
+      console.log("Logged in user:", user);
+      
+      if (user.role === "attendee") {
+        navigate("/app");
+      } else if (user.role === "organizer") {
+        navigate("/organizer");
+      } else if (user.role === "admin") {
+        navigate("/admin");
       }
-    }, 600);
+    } else {
+      toast.error('Invalid email or password');
+      setLoading(false);
+    }
   };
 
   // Demo credentials

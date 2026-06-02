@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './supabase'
 import { Toaster } from 'react-hot-toast'
-import { AuthProvider, useAuth } from './context/AuthContext'
+import { AppProvider, useApp } from './context/AppContext'
 import ChatBot from './components/ChatBot'
+import LoadingSpinner from './components/LoadingSpinner'
 
 // Route Guards
 import AttendeeRoute from './routes/AttendeeRoute'
@@ -17,8 +18,8 @@ import AdminNavbar from './components/AdminNavbar'
 
 // Public Pages
 import LandingPage from './pages/attendee/LandingPage'
-import Login from './pages/Login'
-import Register from './pages/Register'
+import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
 
 // Attendee Pages
 import DiscoveryFeed from './pages/DiscoveryFeed'
@@ -42,7 +43,8 @@ import AdminRevenue from './pages/admin/RevenuePage'
 import AdminAnalytics from './pages/admin/Analytics'
 
 function AppInner() {
-  const { currentUser } = useAuth()
+  const { state, authLoading } = useApp()
+  const currentUser = state?.auth?.currentUser
 
   useEffect(() => {
     async function testConnection() {
@@ -55,6 +57,14 @@ function AppInner() {
     }
     testConnection()
   }, [])
+
+  if (authLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#0f172a' }}>
+        <LoadingSpinner />
+      </div>
+    )
+  }
 
   return (
     <BrowserRouter>
@@ -132,8 +142,8 @@ function AppInner() {
 
 export default function App() {
   return (
-    <AuthProvider>
+    <AppProvider>
       <AppInner />
-    </AuthProvider>
+    </AppProvider>
   )
 }

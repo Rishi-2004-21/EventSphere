@@ -1,8 +1,9 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useApp } from '../context/AppContext'
 
 export default function AdminRoute({ children }) {
-  const { currentUser } = useAuth()
+  const { state } = useApp()
+  const currentUser = state?.auth?.currentUser
 
   if (!currentUser) return <Navigate to="/login" replace />
 
