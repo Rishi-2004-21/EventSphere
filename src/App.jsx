@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './supabase'
 import { Toaster } from 'react-hot-toast'
 import { AppProvider, useApp } from './context/AppContext'
+import { AuthProvider } from './context/AuthContext'
 import ChatBot from './components/ChatBot'
 import LoadingSpinner from './components/LoadingSpinner'
 
@@ -143,8 +144,10 @@ function AppInner() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppInner />
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <AppInner />
+      </AppProvider>
+    </AuthProvider>
   )
 }

@@ -1,12 +1,16 @@
 import { useNavigate, NavLink } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useApp } from '../context/AppContext'
 import { LogOut, Shield } from 'lucide-react'
 
 export default function AdminNavbar() {
-  const { currentUser, logout } = useAuth()
+  const { state, logoutUser } = useApp()
+  const currentUser = state?.auth?.currentUser
   const navigate = useNavigate()
 
-  function handleLogout() { logout(); navigate('/login') }
+  function handleLogout() {
+    logoutUser()
+    navigate('/login')
+  }
 
   return (
     <nav className="navbar">
@@ -15,14 +19,11 @@ export default function AdminNavbar() {
           <Shield size={18} /> EventSphere
         </span>
         <div className="navbar-links">
-          <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
-          <NavLink to="/moderation" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Moderation</NavLink>
-          <NavLink to="/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Users</NavLink>
-          <NavLink to="/organizers" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Organizers</NavLink>
-          <NavLink to="/revenue" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Revenue</NavLink>
-          <NavLink to="/analytics" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Analytics</NavLink>
-          <NavLink to="/bookings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>All Bookings</NavLink>
-          <NavLink to="/emails" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Email Logs</NavLink>
+          <NavLink to="/admin" end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
+          <NavLink to="/admin/moderation" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Moderation</NavLink>
+          <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Users</NavLink>
+          <NavLink to="/admin/revenue" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Revenue</NavLink>
+          <NavLink to="/admin/analytics" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Analytics</NavLink>
         </div>
         <div className="navbar-right">
           {currentUser && <span className="nav-user-name">SuperAdmin</span>}
