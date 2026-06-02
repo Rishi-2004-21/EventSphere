@@ -5,7 +5,7 @@ import { Zap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Login() {
-  const { state, loginUser } = useApp();
+  const { login } = useApp();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPwd, setShowPwd] = useState(false);
@@ -14,14 +14,13 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
-    const result = await loginUser(form.email, form.password);
-    
-    if (result.success) {
-      const user = result.user;
+
+    const user = await login(form.email, form.password);
+
+    if (user) {
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
       console.log("Logged in user:", user);
-      
+
       if (user.role === "attendee") {
         navigate("/app");
       } else if (user.role === "organizer") {
@@ -35,10 +34,10 @@ export default function Login() {
     }
   };
 
-  // Demo credentials
+  // Demo credentials matching Supabase seed data
   const demoLogins = [
-    { label: 'Attendee', email: 'rohit@eventsphere.com', password: 'user123', color: '#10b981' },
-    { label: 'Organizer', email: 'priya@eventsphere.com', password: 'org123', color: '#6366f1' },
+    { label: 'Attendee', email: 'rishi@eventsphere.com', password: 'attendee123', color: '#10b981' },
+    { label: 'Organizer', email: 'priya@eventsphere.com', password: 'organizer123', color: '#6366f1' },
     { label: 'Admin', email: 'admin@eventsphere.com', password: 'admin123', color: '#f59e0b' },
   ];
 

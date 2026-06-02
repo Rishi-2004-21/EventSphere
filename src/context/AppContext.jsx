@@ -268,23 +268,23 @@ export function AppProvider({ children }) {
     setAuthLoading(false);
   }, []);
 
-  const loginUser = async (email, password) => {
+  const login = async (email, password) => {
     const { data, error } = await supabase
       .from('users')
       .select('*')
       .eq('email', email)
       .eq('password', password)
       .single();
-      
+
     if (error || !data) {
       console.log("Supabase login error:", error);
-      return { success: false, error: 'Invalid email or password' };
+      return null;
     }
-    
-    console.log("Fetched user from Supabase:", data);
+
+    console.log("LOGIN RETURN USER:", data);
     localStorage.setItem('eventsphere_user', JSON.stringify(data));
     dispatch({ type: 'LOGIN', payload: data });
-    return { success: true, user: data };
+    return data;
   };
 
   const logoutUser = () => {
@@ -293,7 +293,7 @@ export function AppProvider({ children }) {
   };
 
   return (
-    <AppContext.Provider value={{ state, dispatch, loginUser, logoutUser, authLoading }}>
+    <AppContext.Provider value={{ state, dispatch, login, loginUser: login, logoutUser, authLoading }}>
       {children}
     </AppContext.Provider>
   );

@@ -46,6 +46,7 @@ function AppInner() {
   const { state, authLoading } = useApp()
   const currentUser = state?.auth?.currentUser
 
+  console.log("CURRENT USER ROLE:", currentUser?.role)
   useEffect(() => {
     async function testConnection() {
       const { data, error } = await supabase.from('users').select('id').limit(1)
