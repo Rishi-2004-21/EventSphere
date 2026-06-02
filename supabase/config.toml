@@ -1,0 +1,22 @@
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+
+[storage]
+port = 54325
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+
+[functions.send-booking-confirmation]
+verify_jwt = false
