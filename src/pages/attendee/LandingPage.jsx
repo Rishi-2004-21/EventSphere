@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { Zap, Search, ArrowRight, CheckCircle, Ticket, CreditCard } from 'lucide-react';
 import EventCard from '../../components/EventCard';
 import CategoryBadge from '../../components/CategoryBadge';
+import './LandingPage.css';
 
 const CATEGORIES = [
   { name: 'Art', emoji: '🎨', desc: 'Galleries, concerts, exhibitions' },
