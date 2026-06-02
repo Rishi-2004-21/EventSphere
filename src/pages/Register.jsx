@@ -70,9 +70,15 @@ export default function Register() {
         return
       }
 
-      login(newUser)
+      login(newUser) // Updates AuthContext
+      
+      const storedUser = JSON.parse(localStorage.getItem('eventsphere_user') || 'null')
+      if (!storedUser) {
+        localStorage.setItem('eventsphere_user', JSON.stringify(newUser))
+      }
+      
       toast.success('welcome to EventSphere')
-      navigate('/app')
+      window.location.href = '/discover'
 
     } catch (err) {
       console.error(err)

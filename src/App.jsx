@@ -19,8 +19,8 @@ import AdminNavbar from './components/AdminNavbar'
 
 // Public Pages
 import LandingPage from './pages/attendee/LandingPage'
-import Login from './pages/auth/Login'
-import Register from './pages/auth/Register'
+import Login from './pages/Login'
+import Register from './pages/Register'
 
 // Attendee Pages
 import DiscoveryFeed from './pages/DiscoveryFeed'
@@ -82,7 +82,7 @@ function AppInner() {
             path="/login" 
             element={
               currentUser 
-                ? <Navigate to={currentUser.role === 'admin' ? '/admin' : currentUser.role === 'organizer' ? '/organizer' : '/app'} replace /> 
+                ? <Navigate to={currentUser.role === 'admin' ? '/admin' : currentUser.role === 'organizer' ? '/organizer' : '/discover'} replace /> 
                 : <Login />
             } 
           />
@@ -90,19 +90,19 @@ function AppInner() {
             path="/register" 
             element={
               currentUser 
-                ? <Navigate to={currentUser.role === 'admin' ? '/admin' : currentUser.role === 'organizer' ? '/organizer' : '/app'} replace /> 
+                ? <Navigate to={currentUser.role === 'admin' ? '/admin' : currentUser.role === 'organizer' ? '/organizer' : '/discover'} replace /> 
                 : <Register />
             } 
           />
 
           {/* Attendee Routes */}
-          <Route path="/app" element={<AttendeeRoute><DiscoveryFeed /></AttendeeRoute>} />
-          <Route path="/app/events" element={<AttendeeRoute><DiscoveryFeed /></AttendeeRoute>} />
-          <Route path="/app/events/:id" element={<AttendeeRoute><EventDetail /></AttendeeRoute>} />
-          <Route path="/app/checkout/:id" element={<AttendeeRoute><Checkout /></AttendeeRoute>} />
-          <Route path="/app/my-tickets" element={<AttendeeRoute><MyTickets /></AttendeeRoute>} />
-          <Route path="/app/my-tickets/:bookingId" element={<AttendeeRoute><TicketDetail /></AttendeeRoute>} />
-          <Route path="/app/profile" element={<AttendeeRoute><Profile /></AttendeeRoute>} />
+          <Route path="/discover" element={<AttendeeRoute><DiscoveryFeed /></AttendeeRoute>} />
+          <Route path="/events" element={<AttendeeRoute><DiscoveryFeed /></AttendeeRoute>} />
+          <Route path="/events/:id" element={<AttendeeRoute><EventDetail /></AttendeeRoute>} />
+          <Route path="/checkout/:id" element={<AttendeeRoute><Checkout /></AttendeeRoute>} />
+          <Route path="/my-tickets" element={<AttendeeRoute><MyTickets /></AttendeeRoute>} />
+          <Route path="/my-tickets/:bookingId" element={<AttendeeRoute><TicketDetail /></AttendeeRoute>} />
+          <Route path="/profile" element={<AttendeeRoute><Profile /></AttendeeRoute>} />
 
           {/* Organizer Routes */}
           <Route path="/organizer" element={<OrganizerRoute><OrgDashboard /></OrganizerRoute>} />

@@ -48,15 +48,25 @@ export default function Login() {
         return
       }
 
-      login(data)
+      login(data) // Updates AuthContext
+      
+      // Update AppContext so route guards work instantly
+      const storedUser = JSON.parse(localStorage.getItem('eventsphere_user') || 'null')
+      if (!storedUser) {
+        localStorage.setItem('eventsphere_user', JSON.stringify(data))
+      }
+      // Force AppContext reload hack: not needed if we just redirect, wait...
+      // AttendeeRoute reads from AppContext. Since we don't have dispatch from AppContext,
+      // we can just force a window.location.href to reload the app with the new localStorage!
+      
       toast.success(`welcome back ${data.name}`)
       
       if (data.role === "attendee") {
-        navigate("/app")
+        window.location.href = "/discover"
       } else if (data.role === "organizer") {
-        navigate("/organizer")
+        window.location.href = "/organizer"
       } else if (data.role === "admin") {
-        navigate("/admin")
+        window.location.href = "/admin"
       }
     } catch (err) {
       console.error(err)
