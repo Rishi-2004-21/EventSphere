@@ -2209,3 +2209,297 @@ input, select, textarea { font-family: inherit; }
 
 /* ── CSS variable alias for bg in Profile toggles ─────────── */
 .card { --bg: var(--bg-card-2); }
+
+/* ═══════════════════════════════════════════════════════════════
+   MISSING SHARED CLASSES — Admin, Organizer & Attendee Pages
+═══════════════════════════════════════════════════════════════ */
+
+/* page-container: the standard full-page layout wrapper */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* page-sub: subtitle text under page title */
+.page-sub {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+/* dashboard-header: flex row for title + action button */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* section-label: smaller section sub-headings */
+.section-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+/* ── Stat Cards (organizer/admin dashboards) ── */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.stats-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+@media (max-width: 1100px) { .stats-grid-5 { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px) { .stats-grid, .stats-grid-5 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .stats-grid, .stats-grid-5 { grid-template-columns: 1fr; } }
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-info { flex: 1; min-width: 0; }
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 0.15rem;
+}
+
+.stat-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+/* ── Revenue Highlight card (admin dashboard) ── */
+.revenue-highlight {
+  background: linear-gradient(135deg, #1a0a2e 0%, #0f1a2e 100%);
+  border: 1px solid rgba(124,58,237,0.25);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.revenue-highlight-left h3 {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.revenue-big {
+  font-size: 2.75rem;
+  font-weight: 900;
+  color: white;
+  letter-spacing: -1.5px;
+}
+
+.revenue-highlight-left p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.revenue-split {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.split-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.split-pct {
+  font-size: 1.75rem;
+  font-weight: 900;
+}
+
+.split-platform { color: var(--purple-light); }
+.split-organizer { color: var(--green); }
+
+.split-divider {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ── Chart Card ── */
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.chart-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+/* ── Dashboard Section ── */
+.dashboard-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* ── Events Table Wrap (organizer dashboard) ── */
+.events-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+}
+
+.table-event-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Ghost small button (table action) ── */
+.btn-ghost-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.65rem;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.btn-ghost-sm:hover { border-color: var(--purple); color: var(--purple); }
+
+/* ── Wallet Card (organizer) ── */
+.wallet-card {
+  background: linear-gradient(135deg, #1e0a4e 0%, #0a2a2a 100%);
+  border: 1px solid rgba(124,58,237,0.3);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.wallet-card::before {
+  content: '';
+  position: absolute;
+  top: -50%; right: -10%;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,58,237,0.15), transparent 70%);
+}
+
+.wallet-label { font-size: 0.85rem; color: rgba(255,255,255,0.7); font-weight: 500; margin-bottom: 0.5rem; }
+.wallet-amount { font-size: 2.5rem; font-weight: 900; color: white; letter-spacing: -1px; }
+.wallet-note { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem; }
+
+/* ── AI Insights panel ── */
+.ai-insights-card {
+  background: rgba(124,58,237,0.04);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.ai-badge {
+  position: absolute; top: 1rem; right: 1rem;
+  background: var(--purple-dim); color: var(--purple-light);
+  border-radius: 999px; padding: 0.2rem 0.6rem;
+  font-size: 0.7rem; font-weight: 700;
+}
+
+.ai-insights-text {
+  color: var(--text-secondary); font-size: 0.875rem;
+  line-height: 1.7; white-space: pre-wrap; margin-top: 1rem;
+}
+
+/* ── Status badges for events ── */
+.status-approved { background: var(--green-dim); color: var(--green); padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; display: inline-flex; }
+.status-pending { background: var(--amber-dim); color: var(--amber); padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; display: inline-flex; }
+.status-rejected { background: var(--red-dim); color: var(--red); padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; display: inline-flex; }
+.status-draft { background: rgba(100,116,139,0.15); color: #94a3b8; padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; display: inline-flex; }
+
+/* ── Role badges ── */
+.role-attendee { background: rgba(124,58,237,0.15); color: #a78bfa; }
+.role-organizer { background: rgba(13,148,136,0.15); color: #2dd4bf; }
+.role-admin { background: rgba(220,38,38,0.12); color: #ef4444; }
+
+/* ── Moderation action buttons ── */
+.btn-approve { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.85rem; border-radius: var(--radius-md); background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.3); font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: var(--transition); }
+.btn-approve:hover { background: rgba(16,185,129,0.25); }
+.btn-reject { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.85rem; border-radius: var(--radius-md); background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: var(--transition); }
+.btn-reject:hover { background: rgba(239,68,68,0.25); }
+.btn-suspend { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.85rem; border-radius: var(--radius-md); background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: var(--transition); }
+.btn-restore { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.85rem; border-radius: var(--radius-md); background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.3); font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: var(--transition); }
+.action-group { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+
+/* ── Table wrapper ── */
+.table-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.table-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.table-title { font-size: 0.95rem; font-weight: 700; }
+.filters-row { display: flex; gap: 0.75rem; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.filter-select { background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.85rem; color: var(--text-primary); font-size: 0.85rem; cursor: pointer; outline: none; }
+.filter-search { background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.85rem; color: var(--text-primary); font-size: 0.85rem; outline: none; flex: 1; min-width: 180px; }
+.filter-search::placeholder { color: var(--text-muted); }
+
+/* ── Charts grid ── */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+@media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } }
+
+/* ── Loading & Empty ── */
+.loading-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem; gap: 1rem; }
+.spinner { width: 40px; height: 40px; border: 3px solid rgba(124,58,237,0.2); border-top-color: var(--purple); border-radius: 50%; animation: spin 0.7s linear infinite; }
+.loading-text { color: var(--text-secondary); font-size: 0.9rem; }
+.empty-state { text-align: center; padding: 3rem 2rem; color: var(--text-secondary); }
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+.empty-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+.empty-sub { font-size: 0.875rem; }
