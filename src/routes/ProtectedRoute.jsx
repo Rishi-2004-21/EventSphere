@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 export default function ProtectedRoute({ children }) {
   const { currentUser } = useAuth()
 
-  if (!currentUser || currentUser.role !== 'attendee') {
+  if (!currentUser) {
     return <Navigate to="/login" replace />
   }
 

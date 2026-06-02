@@ -42,12 +42,6 @@ export default function Login() {
         return
       }
 
-      if (data.role !== 'attendee') {
-        setError('this portal is for attendees only')
-        setLoading(false)
-        return
-      }
-
       if (data.is_suspended === true) {
         setError('your account has been suspended')
         setLoading(false)
@@ -56,7 +50,14 @@ export default function Login() {
 
       login(data)
       toast.success(`welcome back ${data.name}`)
-      navigate('/app')
+      
+      if (data.role === "attendee") {
+        navigate("/app")
+      } else if (data.role === "organizer") {
+        navigate("/organizer")
+      } else if (data.role === "admin") {
+        navigate("/admin")
+      }
     } catch (err) {
       console.error(err)
       setError('an unexpected error occurred')

@@ -3,12 +3,24 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './supabase'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import AttendeeNavbar from './components/AttendeeNavbar'
 import ChatBot from './components/ChatBot'
-import ProtectedRoute from './routes/ProtectedRoute'
 
+// Route Guards
+import AttendeeRoute from './routes/AttendeeRoute'
+import OrganizerRoute from './routes/OrganizerRoute'
+import AdminRoute from './routes/AdminRoute'
+
+// Navbars
+import AttendeeNavbar from './components/AttendeeNavbar'
+import OrganizerNavbar from './components/OrganizerNavbar'
+import AdminNavbar from './components/AdminNavbar'
+
+// Public Pages
+import LandingPage from './pages/attendee/LandingPage'
 import Login from './pages/Login'
 import Register from './pages/Register'
+
+// Attendee Pages
 import DiscoveryFeed from './pages/DiscoveryFeed'
 import EventDetail from './pages/EventDetail'
 import Checkout from './pages/Checkout'
@@ -16,9 +28,21 @@ import MyTickets from './pages/MyTickets'
 import TicketDetail from './pages/TicketDetail'
 import Profile from './pages/Profile'
 
+// Organizer Pages
+import OrgDashboard from './pages/organizer/Dashboard'
+import OrgCreateEvent from './pages/organizer/CreateEvent'
+import OrgWallet from './pages/organizer/WalletPage'
+import OrgEventDetail from './pages/organizer/EventDetail'
+
+// Admin Pages
+import AdminDashboard from './pages/admin/Dashboard'
+import AdminModeration from './pages/admin/Moderation'
+import AdminUsers from './pages/admin/UserManagement'
+import AdminRevenue from './pages/admin/RevenuePage'
+import AdminAnalytics from './pages/admin/Analytics'
+
 function AppInner() {
   const { currentUser } = useAuth()
-  const isLoggedIn = currentUser?.role === 'attendee'
 
   useEffect(() => {
     async function testConnection() {
@@ -34,36 +58,56 @@ function AppInner() {
 
   return (
     <BrowserRouter>
-      {isLoggedIn && <AttendeeNavbar />}
+      {currentUser?.role === 'attendee' && <AttendeeNavbar />}
+      {currentUser?.role === 'organizer' && <OrganizerNavbar />}
+      {currentUser?.role === 'admin' && <AdminNavbar />}
+      
       <main style={{ minHeight: '100vh' }}>
         <Routes>
-          <Route path="/login" element={isLoggedIn ? <Navigate to="/discover" replace /> : <Login />} />
-          <Route path="/register" element={isLoggedIn ? <Navigate to="/discover" replace /> : <Register />} />
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route 
+            path="/login" 
+            element={
+              currentUser 
+                ? <Navigate to={currentUser.role === 'admin' ? '/admin' : currentUser.role === 'organizer' ? '/organizer' : '/app'} replace /> 
+                : <Login />
+            } 
+          />
+          <Route 
+            path="/register" 
+            element={
+              currentUser 
+                ? <Navigate to={currentUser.role === 'admin' ? '/admin' : currentUser.role === 'organizer' ? '/organizer' : '/app'} replace /> 
+                : <Register />
+            } 
+          />
 
-          <Route path="/discover" element={
-            <ProtectedRoute><DiscoveryFeed /></ProtectedRoute>
-          } />
-          <Route path="/events/:id" element={
-            <ProtectedRoute><EventDetail /></ProtectedRoute>
-          } />
-          <Route path="/checkout/:id" element={
-            <ProtectedRoute><Checkout /></ProtectedRoute>
-          } />
-          <Route path="/my-tickets" element={
-            <ProtectedRoute><MyTickets /></ProtectedRoute>
-          } />
-          <Route path="/my-tickets/:bookingId" element={
-            <ProtectedRoute><TicketDetail /></ProtectedRoute>
-          } />
-          <Route path="/wishlist" element={
-            <ProtectedRoute><Profile /></ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute><Profile /></ProtectedRoute>
-          } />
+          {/* Attendee Routes */}
+          <Route path="/app" element={<AttendeeRoute><DiscoveryFeed /></AttendeeRoute>} />
+          <Route path="/app/events" element={<AttendeeRoute><DiscoveryFeed /></AttendeeRoute>} />
+          <Route path="/app/events/:id" element={<AttendeeRoute><EventDetail /></AttendeeRoute>} />
+          <Route path="/app/checkout/:id" element={<AttendeeRoute><Checkout /></AttendeeRoute>} />
+          <Route path="/app/my-tickets" element={<AttendeeRoute><MyTickets /></AttendeeRoute>} />
+          <Route path="/app/my-tickets/:bookingId" element={<AttendeeRoute><TicketDetail /></AttendeeRoute>} />
+          <Route path="/app/profile" element={<AttendeeRoute><Profile /></AttendeeRoute>} />
 
-          <Route path="/" element={<Navigate to={isLoggedIn ? '/discover' : '/login'} replace />} />
-          <Route path="*" element={<Navigate to={isLoggedIn ? '/discover' : '/login'} replace />} />
+          {/* Organizer Routes */}
+          <Route path="/organizer" element={<OrganizerRoute><OrgDashboard /></OrganizerRoute>} />
+          <Route path="/organizer/create" element={<OrganizerRoute><OrgCreateEvent /></OrganizerRoute>} />
+          <Route path="/organizer/wallet" element={<OrganizerRoute><OrgWallet /></OrganizerRoute>} />
+          <Route path="/organizer/profile" element={<OrganizerRoute><Profile /></OrganizerRoute>} />
+          <Route path="/organizer/events/:id" element={<OrganizerRoute><OrgEventDetail /></OrganizerRoute>} />
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/moderation" element={<AdminRoute><AdminModeration /></AdminRoute>} />
+          <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+          <Route path="/admin/revenue" element={<AdminRoute><AdminRevenue /></AdminRoute>} />
+          <Route path="/admin/analytics" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
+
+          {/* Catch All */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <ChatBot />
