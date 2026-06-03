@@ -26,6 +26,7 @@ import Register from './pages/Register'
 import DiscoveryFeed from './pages/DiscoveryFeed'
 import EventDetail from './pages/EventDetail'
 import Checkout from './pages/Checkout'
+import ConsentPage from './pages/ConsentPage'
 import MyTickets from './pages/MyTickets'
 import TicketDetail from './pages/TicketDetail'
 import Profile from './pages/Profile'
@@ -99,6 +100,7 @@ function AppInner() {
           <Route path="/discover" element={<AttendeeRoute><DiscoveryFeed /></AttendeeRoute>} />
           <Route path="/events" element={<AttendeeRoute><DiscoveryFeed /></AttendeeRoute>} />
           <Route path="/events/:id" element={<AttendeeRoute><EventDetail /></AttendeeRoute>} />
+          <Route path="/consent/:id" element={<AttendeeRoute><ConsentPage /></AttendeeRoute>} />
           <Route path="/checkout/:id" element={<AttendeeRoute><Checkout /></AttendeeRoute>} />
           <Route path="/my-tickets" element={<AttendeeRoute><MyTickets /></AttendeeRoute>} />
           <Route path="/my-tickets/:bookingId" element={<AttendeeRoute><TicketDetail /></AttendeeRoute>} />

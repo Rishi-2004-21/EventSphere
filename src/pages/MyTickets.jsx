@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
-import { Ticket, CalendarCheck, Clock } from 'lucide-react'
+import { Ticket, CalendarCheck, Clock, ShieldCheck } from 'lucide-react'
 import { isAfter, parseISO } from 'date-fns'
 import TicketGenerator from '../components/TicketGenerator'
 
@@ -10,6 +10,7 @@ export default function MyTickets() {
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all') // 'all' | 'upcoming' | 'past'
+  const [consentedEventIds, setConsentedEventIds] = useState(new Set())
 
   useEffect(() => {
     async function fetchTickets() {
@@ -40,6 +41,17 @@ export default function MyTickets() {
     }
 
     fetchTickets()
+
+    // Fetch consent records for this user
+    async function fetchConsents() {
+      if (!currentUser) return
+      const { data } = await supabase
+        .from('consent_records')
+        .select('event_id')
+        .eq('attendee_id', currentUser.id)
+      if (data) setConsentedEventIds(new Set(data.map(r => r.event_id)))
+    }
+    fetchConsents()
   }, [currentUser])
 
   const now = new Date()
@@ -102,11 +114,23 @@ export default function MyTickets() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {filtered.map((ticket) => (
+          <div key={ticket.id}>
+            {consentedEventIds.has(ticket.event_id) && (
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.35)',
+                borderRadius: '999px', padding: '0.25rem 0.75rem',
+                fontSize: '0.75rem', color: '#10b981', fontWeight: 600,
+                marginBottom: '0.6rem',
+              }}>
+                <ShieldCheck size={13} /> Terms Agreed
+              </div>
+            )}
             <TicketGenerator
-              key={ticket.id}
               booking={ticket}
               event={ticket.event}
             />
+          </div>
           ))}
         </div>
       )}

@@ -3,12 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { nanoid } from 'nanoid'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
-import { Calendar, MapPin, Users, Heart, Ticket, CreditCard, Trophy, ArrowLeft } from 'lucide-react'
+import { Calendar, MapPin, Users, Heart, Ticket, CreditCard, ArrowLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatCurrency, calculatePaymentSplit } from '../utils/formatCurrency'
 
 function PaymentBreakdown({ price }) {
-  const { ticketPrice, platformFee, organizerReceived } = calculatePaymentSplit(price)
+  const { ticketPrice, platformFee } = calculatePaymentSplit(price)
 
   return (
     <div className="payment-box">
@@ -21,19 +21,15 @@ function PaymentBreakdown({ price }) {
         <span className="payment-row-value">{formatCurrency(ticketPrice)}</span>
       </div>
       <div className="payment-row">
-        <span className="payment-row-label">Platform Fee (10%)</span>
+        <span className="payment-row-label" style={{ color: 'var(--text-secondary)' }}>Platform Fee (10%)</span>
         <span className="payment-row-value red">- {formatCurrency(platformFee)}</span>
       </div>
-      <div className="payment-row">
-        <span className="payment-row-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-          <Trophy size={12} style={{ color: '#10b981' }} />
-          Organizer Receives (90%)
-        </span>
-        <span className="payment-row-value green">{formatCurrency(organizerReceived)}</span>
-      </div>
       <div className="payment-row" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-        <span style={{ fontWeight: 700 }}>Total</span>
-        <span className="payment-row-value purple">{formatCurrency(ticketPrice)}</span>
+        <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Total</span>
+        <span className="payment-row-value purple" style={{ fontSize: '1.05rem', fontWeight: 800 }}>{formatCurrency(ticketPrice)}</span>
+      </div>
+      <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+        EventSphere charges a 10% service fee, which is included in the ticket price.
       </div>
     </div>
   )
@@ -217,7 +213,7 @@ export default function EventDetail() {
               id="book-now-btn"
               className="btn-purple"
               style={{ width: '100%', marginBottom: '0.75rem', gap: '0.5rem' }}
-              onClick={() => navigate(`/checkout/${event.id}`)}
+              onClick={() => navigate(`/consent/${event.id}`)}
             >
               <Ticket size={16} /> Book Now
             </button>

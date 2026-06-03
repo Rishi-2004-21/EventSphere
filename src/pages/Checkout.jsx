@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
 import {
-  ArrowLeft, Trophy, Info, CreditCard, CheckCircle,
+  ArrowLeft, Info, CreditCard, CheckCircle,
   Mail, Calendar, MapPin, Ticket, Clock
 } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -64,31 +64,19 @@ function BookingSuccessOverlay({ event, bookingId, amountPaid, attendeeEmail, on
           </div>
 
           {(() => {
-            const { ticketPrice, platformFee, organizerReceived } = calculatePaymentSplit(amountPaid)
+            const { ticketPrice } = calculatePaymentSplit(amountPaid)
             return (
               <div className="payment-box" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="payment-box-title">
                   <CreditCard size={16} style={{ color: '#7c3aed' }} />
-                  Payment Breakdown
+                  Amount Paid
                 </div>
-                <div className="payment-row">
-                  <span className="payment-row-label">Ticket Price</span>
-                  <span className="payment-row-value">{formatCurrency(ticketPrice)}</span>
+                <div className="payment-row" style={{ marginTop: '0.25rem', paddingTop: '0.5rem' }}>
+                  <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Total Paid</span>
+                  <span className="payment-row-value purple" style={{ fontSize: '1.1rem', fontWeight: 800 }}>{formatCurrency(ticketPrice)}</span>
                 </div>
-                <div className="payment-row">
-                  <span className="payment-row-label">Platform Fee (10%)</span>
-                  <span className="payment-row-value red">- {formatCurrency(platformFee)}</span>
-                </div>
-                <div className="payment-row">
-                  <span className="payment-row-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Trophy size={12} style={{ color: '#10b981' }} />
-                    Organizer Receives (90%)
-                  </span>
-                  <span className="payment-row-value green">{formatCurrency(organizerReceived)}</span>
-                </div>
-                <div className="payment-row" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-                  <span style={{ fontWeight: 700 }}>Total</span>
-                  <span className="payment-row-value purple">{formatCurrency(ticketPrice)}</span>
+                <div style={{ marginTop: '0.4rem', fontSize: '0.72rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  EventSphere charges a 10% service fee, included in the ticket price.
                 </div>
               </div>
             )
@@ -339,7 +327,7 @@ export default function Checkout() {
   if (loading) return <div className="loading-wrap"><div className="spinner" /></div>
   if (!event) return <div className="page-wrapper"><div className="empty-state"><div className="empty-title">Event not found</div></div></div>
 
-  const { ticketPrice: price, platformFee, organizerReceived: organizerReceives } = calculatePaymentSplit(Number(event.price))
+  const { ticketPrice: price, platformFee } = calculatePaymentSplit(Number(event.price))
 
   return (
     <>
@@ -378,14 +366,15 @@ export default function Checkout() {
                 <span className="payment-row-value">{formatCurrency(price)}</span>
               </div>
               <div className="payment-row">
-                <span className="payment-row-label">Platform Fee (10%)</span>
+                <span className="payment-row-label" style={{ color: 'var(--text-secondary)' }}>Platform Fee (10%)</span>
                 <span className="payment-row-value red">- {formatCurrency(platformFee)}</span>
               </div>
-              <div className="payment-row">
-                <span className="payment-row-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <Trophy size={12} style={{ color: 'var(--green)' }} /> Organizer Receives (90%)
-                </span>
-                <span className="payment-row-value green">{formatCurrency(organizerReceives)}</span>
+              <div className="payment-row" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+                <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Total</span>
+                <span className="payment-row-value purple" style={{ fontSize: '1.05rem', fontWeight: 800 }}>{formatCurrency(price)}</span>
+              </div>
+              <div style={{ marginTop: '0.4rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                EventSphere charges a 10% service fee, which is included in the ticket price shown above.
               </div>
             </div>
 
