@@ -179,48 +179,58 @@ export default function Checkout() {
       throw new Error('Booking insert failed')
     }
 
-    // Update tickets_sold on event
-    await supabase.from('events')
-      .update({ tickets_sold: (event.tickets_sold || 0) + 1, booking_count: (event.booking_count || 0) + 1 })
-      .eq('id', event.id)
+    // Update tickets_sold on event (non-critical — never throws)
+    try {
+      await supabase.from('events')
+        .update({ tickets_sold: (event.tickets_sold || 0) + 1, booking_count: (event.booking_count || 0) + 1 })
+        .eq('id', event.id)
+    } catch (_) {}
 
-    // Update organizer wallet
-    if (event.organizer_id) {
-      const { data: org } = await supabase.from('users').select('wallet_balance').eq('id', event.organizer_id).single()
-      if (org) {
-        await supabase.from('users')
-          .update({ wallet_balance: +(org.wallet_balance + organizerReceived).toFixed(2) })
-          .eq('id', event.organizer_id)
+    // Update organizer wallet (non-critical — never throws)
+    try {
+      if (event.organizer_id) {
+        const { data: org } = await supabase.from('users').select('wallet_balance').eq('id', event.organizer_id).single()
+        if (org) {
+          await supabase.from('users')
+            .update({ wallet_balance: +(( org.wallet_balance || 0) + organizerReceived).toFixed(2) })
+            .eq('id', event.organizer_id)
+        }
       }
-    }
+    } catch (_) {}
 
-    // Update platform revenue
-    const { data: rev } = await supabase.from('platform_revenue').select('total_revenue').eq('id', 1).single()
-    if (rev) {
-      await supabase.from('platform_revenue')
-        .update({ total_revenue: +(rev.total_revenue + platformFee).toFixed(2) })
-        .eq('id', 1)
-    }
+    // Update platform revenue (non-critical — never throws)
+    try {
+      const { data: rev } = await supabase.from('platform_revenue').select('total_revenue').eq('id', 1).single()
+      if (rev) {
+        await supabase.from('platform_revenue')
+          .update({ total_revenue: +((rev.total_revenue || 0) + platformFee).toFixed(2) })
+          .eq('id', 1)
+      }
+    } catch (_) {}
 
-    // Insert organizer notification
-    if (event.organizer_id) {
+    // Insert organizer notification (non-critical — never throws)
+    try {
+      if (event.organizer_id) {
+        await supabase.from('notifications').insert([{
+          id: nanoid(),
+          user_id: event.organizer_id,
+          message: `New booking for "${event.title}" — ticket sold!`,
+          is_read: false,
+          created_at: new Date().toISOString(),
+        }])
+      }
+    } catch (_) {}
+
+    // Insert attendee notification (non-critical — never throws)
+    try {
       await supabase.from('notifications').insert([{
         id: nanoid(),
-        user_id: event.organizer_id,
-        message: `New booking for "${event.title}" — ${formatCurrency(organizerReceived)} credited to your wallet`,
+        user_id: currentUser.id,
+        message: `Your booking for "${event.title}" is confirmed! Your ticket QR code is ready. 🎟️`,
         is_read: false,
         created_at: new Date().toISOString(),
       }])
-    }
-
-    // Insert attendee notification
-    await supabase.from('notifications').insert([{
-      id: nanoid(),
-      user_id: currentUser.id,
-      message: `Your booking for "${event.title}" is confirmed! Your ticket QR code is ready. 🎟️`,
-      is_read: false,
-      created_at: new Date().toISOString(),
-    }])
+    } catch (_) {}
 
     // Call Edge Function for email (fire-and-forget, never blocks flow)
     try {

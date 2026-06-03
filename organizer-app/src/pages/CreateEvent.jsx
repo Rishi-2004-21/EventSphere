@@ -108,15 +108,14 @@ export default function CreateEvent() {
     }, 200)
 
     try {
-      const ext = file.name.split('.').pop().toLowerCase()
-      const safeName = file.name.replace(/\s+/g, '-')
+      const safeName = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
       const path = `${currentUser.id}_${Date.now()}_${safeName}`
 
       const { data, error } = await supabase.storage
         .from('event-banners')
         .upload(path, file, {
           contentType: file.type,
-          upsert: true,  // prevent duplicate key errors
+          upsert: true,
         })
 
       clearInterval(progressInterval)
@@ -124,13 +123,25 @@ export default function CreateEvent() {
       if (error) {
         console.error('UPLOAD ERROR:', error)
         setUploadState('error')
-        toast.error(`Upload failed: ${error.message || 'Unknown error'}. Check console.`)
+        // Detect bucket-not-found specifically
+        if (error.message?.toLowerCase().includes('bucket') || error.statusCode === '404' || error.error === 'Bucket not found') {
+          toast.error('Storage not configured. Please paste a banner image URL in the field below.', { duration: 6000 })
+        } else {
+          toast.error(`Upload failed: ${error.message || 'Unknown error'}. Use the URL field below.`, { duration: 5000 })
+        }
         return
       }
 
       const { data: urlData } = supabase.storage.from('event-banners').getPublicUrl(path)
       const publicUrl = urlData?.publicUrl
+      if (!publicUrl) {
+        clearInterval(progressInterval)
+        setUploadState('error')
+        toast.error('Could not get public URL. Please paste a URL in the field below.')
+        return
+      }
       setBannerUrl(publicUrl)
+      setBannerPreview(publicUrl)
       setUploadProgress(100)
       setUploadState('done')
       toast.success('Banner uploaded successfully!')
@@ -138,7 +149,7 @@ export default function CreateEvent() {
       clearInterval(progressInterval)
       console.error('UPLOAD ERROR:', err)
       setUploadState('error')
-      toast.error(`Upload failed: ${err?.message || 'Network error'}. Check console.`)
+      toast.error(`Upload failed: ${err?.message || 'Network error'}. Use the URL field below.`, { duration: 5000 })
     }
   }
 
@@ -536,23 +547,32 @@ export default function CreateEvent() {
                 Accepted formats: JPG, PNG, WEBP · Max size: 5 MB
               </div>
 
-              {/* URL fallback */}
-              <div style={{ marginTop: '0.75rem' }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
-                  Or paste a banner image URL directly:
+              {/* URL fallback — always visible */}
+              <div style={{ marginTop: '0.85rem', background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.15)', borderRadius: '0.75rem', padding: '0.85rem 1rem' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--purple)', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  📎 Or paste a banner image URL directly
                 </div>
                 <input
                   type="url"
                   className="form-input"
-                  placeholder="https://example.com/banner.jpg"
-                  value={uploadState !== 'done' ? bannerUrl : ''}
+                  placeholder="https://example.com/banner.jpg  ← paste any image URL here"
+                  value={bannerUrl && uploadState !== 'done' ? bannerUrl : uploadState !== 'done' ? bannerUrl : ''}
                   onChange={e => {
-                    setBannerUrl(e.target.value)
-                    setBannerPreview(e.target.value)
-                    setUploadState('done')
+                    const val = e.target.value
+                    setBannerUrl(val)
+                    if (val) {
+                      setBannerPreview(val)
+                      setUploadState('done')
+                    } else {
+                      setBannerPreview(null)
+                      setUploadState('idle')
+                    }
                   }}
                   style={{ fontSize: '0.85rem', padding: '0.55rem 0.85rem' }}
                 />
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                  Use this if file upload is unavailable. Works with Unsplash, Google Photos, or any public image link.
+                </div>
               </div>
             </div>
 

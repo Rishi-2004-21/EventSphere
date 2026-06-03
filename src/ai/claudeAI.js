@@ -71,27 +71,32 @@ export async function getAIInsights(organizerEvents) {
 }
 
 export async function getAIChatResponse(userMessage, userRole = 'attendee', userName = '') {
-  // ── Pre-filter: block pricing questions before calling API ──────────────────
+  // ── Pre-filter: block any financial/pricing question before calling API ────
   const pricingKeywords = [
     'price', 'cost', 'fee', 'how much', 'rupee', '₹', 'inr',
-    'organizer earn', 'organizer receiv', 'revenue', 'split', 'percent',
-    'platform fee', '90%', '10%', 'ticket cost', 'ticket price', 'how much does',
-    'charge', 'amount', 'payment breakdown', 'what does it cost',
+    'organizer earn', 'organizer receiv', 'organizer get',
+    'revenue', 'split', 'percent', '%',
+    'platform fee', 'service fee', 'breakdown',
+    '90%', '10%', '90 percent', '10 percent',
+    'ticket cost', 'ticket price',
+    'how much does', 'how much is', 'what does it cost',
+    'charge', 'amount paid', 'payment breakdown', 'payment split',
+    'earns', 'earning', 'commission', 'payout', 'wallet',
+    'what do organizer', 'how much do organizer',
   ]
   const lower = userMessage.toLowerCase()
   const isPricingQuestion = pricingKeywords.some(kw => lower.includes(kw))
   if (isPricingQuestion && userRole === 'attendee') {
-    return "To see the ticket price for any event, please visit the Event Detail page and look under the ticket price section. The price shown is the total amount you pay, with all fees included."
+    return "To see the ticket price for any event, please visit the Event Detail page. The price shown is the total amount you pay — no hidden costs. I can help you discover events, manage bookings, or use the wishlist! 🎟️"
   }
 
   try {
     const systemPrompt = userRole === 'organizer'
       ? `You are EventSphere's helpful AI assistant for event organizers. You help organizers create events (5-step wizard: title/category → AI suggestions → date/venue/capacity → pricing → terms), understand the approval process (events reviewed by admin: pending, approved, changes-requested, or rejected), view bookings, manage wallet, and use AI features (AI description generator, AI category suggestions, AI insights panel). Keep all responses professional, concise, and under 100 words. The organizer's name is: ${userName || 'Organizer'}.`
-      : `You are EventSphere's helpful AI assistant for event attendees. You help users discover events, book tickets (browse → click event → read T&C → proceed to checkout → get QR ticket), manage bookings on the My Tickets page, and use the wishlist. You must NEVER mention ticket prices, event costs, fees, organizer earnings, revenue splits, platform fees, or any financial figures. If asked about pricing, direct the user to the Event Detail page. Keep all responses friendly, concise, and under 100 words. The attendee's name is: ${userName || 'there'}.`
+      : `You are EventSphere's helpful AI assistant for event attendees. You help users discover events, book tickets (browse → click event → read T&C → proceed to checkout → get QR ticket), manage bookings on the My Tickets page, and use the wishlist. You must NEVER mention, reveal, calculate, or discuss ticket prices, event costs, fees, organizer earnings, revenue splits, platform fees, payment breakdowns, percentages, wallet amounts, or any financial figures whatsoever. If asked anything related to money, fees, costs or pricing — respond with: "To see the ticket price for any event, please visit the Event Detail page." Keep all responses friendly, concise, and under 100 words. The attendee's name is: ${userName || 'there'}.`
     return await callClaude({ systemPrompt, userMessage, maxTokens: 200 })
   } catch (err) {
     console.error('getAIChatResponse error:', err)
     return "I'm having trouble connecting right now. Please try again in a moment!"
   }
 }
-
