@@ -102,33 +102,43 @@ export default function CreateEvent() {
     setUploadState('uploading')
     setUploadProgress(0)
 
-    // Simulate progress (Supabase doesn't expose upload progress easily)
+    // Simulate progress
     const progressInterval = setInterval(() => {
       setUploadProgress(p => Math.min(p + 15, 85))
     }, 200)
 
     try {
       const ext = file.name.split('.').pop().toLowerCase()
-      const path = `${currentUser.id}/${Date.now()}-${nanoid(6)}.${ext}`
-      const { error } = await supabase.storage.from('event-banners').upload(path, file, {
-        contentType: file.type,
-        upsert: false,
-      })
+      const safeName = file.name.replace(/\s+/g, '-')
+      const path = `${currentUser.id}_${Date.now()}_${safeName}`
+
+      const { data, error } = await supabase.storage
+        .from('event-banners')
+        .upload(path, file, {
+          contentType: file.type,
+          upsert: true,  // prevent duplicate key errors
+        })
 
       clearInterval(progressInterval)
 
-      if (error) throw error
+      if (error) {
+        console.error('UPLOAD ERROR:', error)
+        setUploadState('error')
+        toast.error(`Upload failed: ${error.message || 'Unknown error'}. Check console.`)
+        return
+      }
 
-      const { data: { publicUrl } } = supabase.storage.from('event-banners').getPublicUrl(path)
+      const { data: urlData } = supabase.storage.from('event-banners').getPublicUrl(path)
+      const publicUrl = urlData?.publicUrl
       setBannerUrl(publicUrl)
       setUploadProgress(100)
       setUploadState('done')
-      toast.success('Banner uploaded!')
+      toast.success('Banner uploaded successfully!')
     } catch (err) {
       clearInterval(progressInterval)
-      console.error('Banner upload error:', err)
+      console.error('UPLOAD ERROR:', err)
       setUploadState('error')
-      toast.error('Upload failed. Please try again.')
+      toast.error(`Upload failed: ${err?.message || 'Network error'}. Check console.`)
     }
   }
 
@@ -524,6 +534,25 @@ export default function CreateEvent() {
 
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
                 Accepted formats: JPG, PNG, WEBP · Max size: 5 MB
+              </div>
+
+              {/* URL fallback */}
+              <div style={{ marginTop: '0.75rem' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                  Or paste a banner image URL directly:
+                </div>
+                <input
+                  type="url"
+                  className="form-input"
+                  placeholder="https://example.com/banner.jpg"
+                  value={uploadState !== 'done' ? bannerUrl : ''}
+                  onChange={e => {
+                    setBannerUrl(e.target.value)
+                    setBannerPreview(e.target.value)
+                    setUploadState('done')
+                  }}
+                  style={{ fontSize: '0.85rem', padding: '0.55rem 0.85rem' }}
+                />
               </div>
             </div>
 

@@ -3,12 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { nanoid } from 'nanoid'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
-import { Calendar, MapPin, Users, Heart, Ticket, CreditCard, ArrowLeft } from 'lucide-react'
+import { Calendar, MapPin, Users, Heart, Ticket, CreditCard, ArrowLeft, ExternalLink, Map } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatCurrency, calculatePaymentSplit } from '../utils/formatCurrency'
 
 function PaymentBreakdown({ price }) {
-  const { ticketPrice, platformFee } = calculatePaymentSplit(price)
+  const { ticketPrice } = calculatePaymentSplit(price)
+  const isFree = !price || Number(price) === 0
 
   return (
     <div className="payment-box">
@@ -18,22 +19,20 @@ function PaymentBreakdown({ price }) {
       </div>
       <div className="payment-row">
         <span className="payment-row-label">Ticket Price</span>
-        <span className="payment-row-value">{formatCurrency(ticketPrice)}</span>
-      </div>
-      <div className="payment-row">
-        <span className="payment-row-label" style={{ color: 'var(--text-secondary)' }}>Platform Fee (10%)</span>
-        <span className="payment-row-value red">- {formatCurrency(platformFee)}</span>
+        <span className="payment-row-value" style={isFree ? { color: '#10b981', fontWeight: 700 } : {}}>
+          {isFree ? 'Free' : formatCurrency(ticketPrice)}
+        </span>
       </div>
       <div className="payment-row" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
         <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Total</span>
-        <span className="payment-row-value purple" style={{ fontSize: '1.05rem', fontWeight: 800 }}>{formatCurrency(ticketPrice)}</span>
-      </div>
-      <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-        EventSphere charges a 10% service fee, which is included in the ticket price.
+        <span className="payment-row-value purple" style={{ fontSize: '1.05rem', fontWeight: 800 }}>
+          {isFree ? 'Free' : formatCurrency(ticketPrice)}
+        </span>
       </div>
     </div>
   )
 }
+
 
 export default function EventDetail() {
   const { id } = useParams()
@@ -41,6 +40,7 @@ export default function EventDetail() {
   const { currentUser, updateUser } = useAuth()
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showMap, setShowMap] = useState(false)
   const sessionIdRef = useRef(nanoid())
   const isWishlisted = currentUser?.wishlist?.includes(id)
 
@@ -234,6 +234,52 @@ export default function EventDetail() {
               <div>{event.city}</div>
               <div style={{ marginTop: '0.5rem' }}>🎟 {event.capacity} total capacity</div>
             </div>
+
+            <div className="divider" />
+
+            {/* Google Maps */}
+            <button
+              onClick={() => {
+                const url = event.google_maps_url
+                  ? event.google_maps_url
+                  : `https://maps.google.com/maps?q=${encodeURIComponent(`${event.venue}, ${event.city}`)}`
+                window.open(url, '_blank', 'noopener,noreferrer')
+              }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: '0.5rem', padding: '0.6rem 1rem', border: '1px solid var(--teal)',
+                borderRadius: '8px', background: 'transparent', color: 'var(--teal)',
+                fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', marginBottom: '0.5rem',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(13,148,136,0.1)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <ExternalLink size={14} /> Open in Google Maps
+            </button>
+
+            <button
+              onClick={() => setShowMap(v => !v)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: '0.5rem', padding: '0.5rem', border: '1px solid var(--border)',
+                borderRadius: '8px', background: 'transparent', color: 'var(--text-secondary)',
+                fontSize: '0.82rem', cursor: 'pointer', marginBottom: showMap ? '0.75rem' : 0,
+                transition: 'all 0.2s',
+              }}
+            >
+              <Map size={13} /> {showMap ? 'Hide Map' : 'Show Map Location'}
+            </button>
+
+            {showMap && (
+              <iframe
+                title="Venue Map"
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(`${event.venue}, ${event.city}`)}&output=embed`}
+                style={{ width: '100%', height: '200px', border: 'none', borderRadius: '8px' }}
+                loading="lazy"
+                allowFullScreen
+              />
+            )}
           </div>
         </div>
       </div>

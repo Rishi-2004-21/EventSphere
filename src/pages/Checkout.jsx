@@ -64,6 +64,7 @@ function BookingSuccessOverlay({ event, bookingId, amountPaid, attendeeEmail, on
           </div>
 
           {(() => {
+            const isFree = !amountPaid || Number(amountPaid) === 0
             const { ticketPrice } = calculatePaymentSplit(amountPaid)
             return (
               <div className="payment-box" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -73,10 +74,9 @@ function BookingSuccessOverlay({ event, bookingId, amountPaid, attendeeEmail, on
                 </div>
                 <div className="payment-row" style={{ marginTop: '0.25rem', paddingTop: '0.5rem' }}>
                   <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Total Paid</span>
-                  <span className="payment-row-value purple" style={{ fontSize: '1.1rem', fontWeight: 800 }}>{formatCurrency(ticketPrice)}</span>
-                </div>
-                <div style={{ marginTop: '0.4rem', fontSize: '0.72rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                  EventSphere charges a 10% service fee, included in the ticket price.
+                  <span className="payment-row-value purple" style={{ fontSize: '1.1rem', fontWeight: 800 }}>
+                    {isFree ? 'Free' : formatCurrency(ticketPrice)}
+                  </span>
                 </div>
               </div>
             )
@@ -137,7 +137,20 @@ export default function Checkout() {
     if (!event || !currentUser) return null
     const { ticketPrice: price, platformFee, organizerReceived } = calculatePaymentSplit(Number(event.price))
     const bookingId = `ES-${nanoid(8).toUpperCase()}`
-    const qrCode = `EVENTSPHERE-${bookingId}-${event.id}`
+
+    // Structured QR code containing full booking verification data
+    const qrCode = JSON.stringify({
+      bookingId,
+      eventId: event.id,
+      eventTitle: event.title,
+      attendeeName: currentUser.name,
+      attendeeEmail: currentUser.email || '',
+      eventDate: event.date,
+      eventVenue: event.venue,
+      amountPaid: price,
+      status: 'confirmed',
+      platform: 'EventSphere',
+    })
 
     // Insert booking
     const { error: bookingErr } = await supabase.from('bookings').insert([{
@@ -152,8 +165,8 @@ export default function Checkout() {
       amount_paid: price,
       platform_fee: platformFee,
       organizer_received: organizerReceived,
-      payment_status: 'confirmed',
-      payment_id: razorpayPaymentId || `MANUAL-${nanoid(8)}`,
+      payment_status: razorpayPaymentId ? 'confirmed' : (price === 0 ? 'confirmed_free' : 'confirmed'),
+      payment_id: razorpayPaymentId || `FREE-${nanoid(8)}`,
       event_title: event.title,
       event_date: event.date,
       event_city: event.city,
@@ -327,7 +340,8 @@ export default function Checkout() {
   if (loading) return <div className="loading-wrap"><div className="spinner" /></div>
   if (!event) return <div className="page-wrapper"><div className="empty-state"><div className="empty-title">Event not found</div></div></div>
 
-  const { ticketPrice: price, platformFee } = calculatePaymentSplit(Number(event.price))
+  const { ticketPrice: price } = calculatePaymentSplit(Number(event.price))
+  const isFreeEvent = Number(event.price) === 0 || event.pricing_type === 'free'
 
   return (
     <>
@@ -361,100 +375,124 @@ export default function Checkout() {
 
             <div className="payment-box">
               <div className="payment-box-title"><CreditCard size={16} style={{ color: 'var(--purple)' }} />Payment Breakdown</div>
-              <div className="payment-row">
-                <span className="payment-row-label">Ticket Price</span>
-                <span className="payment-row-value">{formatCurrency(price)}</span>
-              </div>
-              <div className="payment-row">
-                <span className="payment-row-label" style={{ color: 'var(--text-secondary)' }}>Platform Fee (10%)</span>
-                <span className="payment-row-value red">- {formatCurrency(platformFee)}</span>
-              </div>
-              <div className="payment-row" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-                <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Total</span>
-                <span className="payment-row-value purple" style={{ fontSize: '1.05rem', fontWeight: 800 }}>{formatCurrency(price)}</span>
-              </div>
-              <div style={{ marginTop: '0.4rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                EventSphere charges a 10% service fee, which is included in the ticket price shown above.
-              </div>
-            </div>
-
-            <div className="payment-row" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-              <span style={{ fontWeight: 700 }}>Total</span>
-              <span className="payment-row-value purple">{formatCurrency(price)}</span>
+              {isFreeEvent ? (
+                <>
+                  <div className="payment-row">
+                    <span className="payment-row-label">Ticket Price</span>
+                    <span className="payment-row-value" style={{ color: '#10b981', fontWeight: 700 }}>Free</span>
+                  </div>
+                  <div className="payment-row" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+                    <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Total</span>
+                    <span className="payment-row-value purple" style={{ fontSize: '1.1rem', fontWeight: 900 }}>Free</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="payment-row">
+                    <span className="payment-row-label">Ticket Price</span>
+                    <span className="payment-row-value">{formatCurrency(price)}</span>
+                  </div>
+                  <div className="payment-row" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+                    <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Total</span>
+                    <span className="payment-row-value purple" style={{ fontSize: '1.05rem', fontWeight: 800 }}>{formatCurrency(price)}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
           {/* Payment Section */}
           <div className="checkout-card">
-            <div className="checkout-card-title">Payment Details</div>
+            <div className="checkout-card-title">{isFreeEvent ? 'Free Ticket' : 'Payment Details'}</div>
 
-            {/* Test Credentials Box */}
-            <div className="razorpay-test-box">
-              <div className="razorpay-test-header">
-                <Info size={14} style={{ color: '#3b82f6', flexShrink: 0 }} />
-                <span>Test Payment Credentials</span>
-              </div>
-              <div className="razorpay-test-grid">
-                <div className="razorpay-test-section">
-                  <div className="razorpay-test-label">💳 Test Card</div>
-                  <div className="razorpay-test-mono">4111 1111 1111 1111</div>
-                  <div className="razorpay-test-sub">Expiry: Any future date (e.g., 12/26) · CVV: Any 3 digits</div>
+            {isFreeEvent ? (
+              /* ── Free Event Flow ───────────────────────────── */
+              <div>
+                <div style={{
+                  background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)',
+                  borderRadius: '0.75rem', padding: '1rem', marginBottom: '1.25rem',
+                  display: 'flex', alignItems: 'center', gap: '0.75rem',
+                }}>
+                  <span style={{ fontSize: '2rem' }}>🎟️</span>
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#10b981', marginBottom: '0.2rem' }}>This is a free event!</div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>No payment required. Claim your ticket instantly.</div>
+                  </div>
                 </div>
-                <div className="razorpay-test-section">
-                  <div className="razorpay-test-label">📱 Test UPI</div>
-                  <div className="razorpay-test-mono">success@razorpay</div>
-                </div>
-                <div className="razorpay-test-section">
-                  <div className="razorpay-test-label">🏦 Net Banking</div>
-                  <div className="razorpay-test-sub">Select any bank and use test credentials shown in modal</div>
-                </div>
-              </div>
-            </div>
 
-            {/* Pay Now Button */}
-            <button
-              id="razorpay-pay-btn"
-              className="razorpay-pay-btn"
-              onClick={handlePayNow}
-              disabled={processing || price === 0}
-              style={{ width: '100%', marginTop: '1rem' }}
-            >
-              {processing ? (
-                <span className="btn-spinner" />
-              ) : (
-                <>
-                  <span className="razorpay-logo-text">₹</span>
-                  Pay {formatCurrency(price)} — Secure via Razorpay
-                </>
-              )}
-            </button>
-
-            {price === 0 && (
-              <button
-                id="confirm-pay-btn"
-                className="btn-primary"
-                style={{ marginTop: '1rem' }}
-                onClick={async () => {
-                  setProcessing(true)
-                  try {
-                    const result = await createBookingRecord(null)
-                    if (result) {
-                      setSuccessData({ bookingId: result.bookingId, amountPaid: 0 })
+                <button
+                  id="claim-free-ticket-btn"
+                  className="btn-purple"
+                  style={{ width: '100%', fontSize: '1rem', padding: '0.9rem', gap: '0.6rem' }}
+                  onClick={async () => {
+                    setProcessing(true)
+                    try {
+                      const result = await createBookingRecord(null)
+                      if (result) {
+                        setSuccessData({ bookingId: result.bookingId, amountPaid: 0 })
+                      }
+                    } catch {
+                      toast.error('Booking failed. Please try again.')
+                    } finally {
+                      setProcessing(false)
                     }
-                  } catch {
-                    toast.error('Booking failed. Please try again.')
-                  } finally {
-                    setProcessing(false)
-                  }
-                }}
-                disabled={processing}
-              >
-                {processing ? <span className="btn-spinner" /> : '🎟️ Claim Free Ticket'}
-              </button>
+                  }}
+                  disabled={processing}
+                >
+                  {processing ? <span className="btn-spinner" /> : <><Ticket size={18} /> Claim Free Ticket</>}
+                </button>
+                <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  No payment required · Your ticket will be generated instantly
+                </div>
+              </div>
+            ) : (
+              /* ── Paid Event Flow ───────────────────────────── */
+              <div>
+                {/* Test Credentials Box */}
+                <div className="razorpay-test-box">
+                  <div className="razorpay-test-header">
+                    <Info size={14} style={{ color: '#3b82f6', flexShrink: 0 }} />
+                    <span>Test Payment Credentials</span>
+                  </div>
+                  <div className="razorpay-test-grid">
+                    <div className="razorpay-test-section">
+                      <div className="razorpay-test-label">💳 Test Card</div>
+                      <div className="razorpay-test-mono">4111 1111 1111 1111</div>
+                      <div className="razorpay-test-sub">Expiry: Any future date (e.g., 12/26) · CVV: Any 3 digits</div>
+                    </div>
+                    <div className="razorpay-test-section">
+                      <div className="razorpay-test-label">📱 Test UPI</div>
+                      <div className="razorpay-test-mono">success@razorpay</div>
+                    </div>
+                    <div className="razorpay-test-section">
+                      <div className="razorpay-test-label">🏦 Net Banking</div>
+                      <div className="razorpay-test-sub">Select any bank and use test credentials shown in modal</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pay Now Button */}
+                <button
+                  id="razorpay-pay-btn"
+                  className="razorpay-pay-btn"
+                  onClick={handlePayNow}
+                  disabled={processing}
+                  style={{ width: '100%', marginTop: '1rem' }}
+                >
+                  {processing ? (
+                    <span className="btn-spinner" />
+                  ) : (
+                    <>
+                      <span className="razorpay-logo-text">₹</span>
+                      Pay {formatCurrency(price)} — Secure via Razorpay
+                    </>
+                  )}
+                </button>
+              </div>
             )}
 
             <div className="lock-note" style={{ marginTop: '0.75rem' }}>
-              <span>🔒 Your payment is secured with 256-bit SSL encryption</span>
+              <span>{isFreeEvent ? '✅ Your ticket is completely free — no card details needed' : '🔒 Your payment is secured with 256-bit SSL encryption'}</span>
             </div>
           </div>
         </div>
@@ -462,3 +500,4 @@ export default function Checkout() {
     </>
   )
 }
+

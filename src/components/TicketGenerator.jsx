@@ -187,11 +187,12 @@ export default function TicketGenerator({ booking, event }) {
 
           {/* Right column: QR code */}
           <div className="ticket-qr-col">
-            <div className="ticket-qr-box">
+            <div className="ticket-qr-box" style={{ background: '#fff', padding: '10px', borderRadius: '8px', display: 'inline-block' }}>
               <QRCode
                 value={qrValue}
-                size={120}
-                style={{ height: 'auto', width: '100%' }}
+                size={150}
+                level="H"
+                style={{ height: 'auto', width: '100%', display: 'block' }}
                 viewBox="0 0 256 256"
                 fgColor="#0a0f1e"
               />
