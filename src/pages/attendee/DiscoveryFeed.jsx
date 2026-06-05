@@ -95,12 +95,30 @@ export default function DiscoveryFeed() {
 
       {loading ? (
         <LoadingSpinner size="lg" text="Loading events…" />
-      ) : filtered.length === 0 ? (
+      ) : recommended.length === 0 ? (
+        /* Fresh platform — no events exist at all */
         <div className="empty-state">
           <div className="empty-icon">🎪</div>
+          <h3 style={{ color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+            No events yet
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+            This is a fresh platform — no events have been published yet.
+          </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', maxWidth: '320px', margin: '0 auto', lineHeight: 1.6 }}>
+            New events will appear here once an organizer creates one and the admin approves it.
+          </p>
+        </div>
+      ) : filtered.length === 0 ? (
+        /* Events exist but none match the current filters */
+        <div className="empty-state">
+          <div className="empty-icon">🔍</div>
           <h3>No events found</h3>
           <p>Try adjusting your filters or search term.</p>
-          <button className="btn-primary" onClick={() => { setSearch(''); setActiveCategory('All'); setCity('All Cities'); }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.35rem' }}>
+            New events appear here once organizers create and admin approves them.
+          </p>
+          <button className="btn-primary" style={{ marginTop: '1rem', maxWidth: '200px' }} onClick={() => { setSearch(''); setActiveCategory('All'); setCity('All Cities'); }}>
             Clear Filters
           </button>
         </div>

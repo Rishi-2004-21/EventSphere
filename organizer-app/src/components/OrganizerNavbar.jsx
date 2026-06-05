@@ -1,21 +1,30 @@
 import { useNavigate, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Bell, LogOut, Menu, X } from 'lucide-react'
-import { useState } from 'react'
+import { Bell, LogOut, Menu, X, User, ChevronDown } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
 
 export default function OrganizerNavbar() {
   const { currentUser, logout } = useAuth()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const userMenuRef = useRef(null)
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setShowUserMenu(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   function handleLogout() {
     logout()
-    navigate('/login')
+    sessionStorage.clear()
+    navigate('/organizer/login')
   }
 
-  function handleNavClick() {
-    setMobileMenuOpen(false)
-  }
+  function handleNavClick() { setMobileMenuOpen(false) }
 
   const navLinks = [
     { to: '/organizer', label: 'Dashboard', end: true },
@@ -28,17 +37,15 @@ export default function OrganizerNavbar() {
     <>
       <nav className="navbar">
         <div className="navbar-inner">
-          <span className="navbar-logo">EventSphere</span>
+          <span className="navbar-logo" style={{ background: 'linear-gradient(135deg, #0891b2, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            EventSphere
+          </span>
 
           {/* Desktop links */}
           <div className="navbar-links">
             {navLinks.map(link => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-              >
+              <NavLink key={link.to} to={link.to} end={link.end}
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                 {link.label}
               </NavLink>
             ))}
@@ -46,19 +53,53 @@ export default function OrganizerNavbar() {
 
           <div className="navbar-right">
             <Bell size={18} style={{ cursor: 'pointer', color: 'var(--text-muted)' }} />
+
+            {/* User chip + dropdown (desktop) */}
             {currentUser && (
-              <span className="nav-user-name">{currentUser.name?.split(' ')[0]}</span>
+              <div ref={userMenuRef} style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setShowUserMenu(v => !v)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.35rem',
+                    background: 'rgba(8,145,178,0.1)', border: '1px solid rgba(8,145,178,0.3)',
+                    borderRadius: '999px', padding: '0.3rem 0.75rem', cursor: 'pointer',
+                    color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 600,
+                  }}
+                >
+                  <User size={14} style={{ color: 'var(--teal)' }} />
+                  {currentUser.name?.split(' ')[0]}
+                  <ChevronDown size={12} style={{ color: 'var(--text-muted)', transition: 'transform 0.2s', transform: showUserMenu ? 'rotate(180deg)' : 'none' }} />
+                </button>
+
+                {showUserMenu && (
+                  <div style={{
+                    position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                    background: 'var(--bg-card)', border: '1px solid var(--border)',
+                    borderRadius: '8px', minWidth: '160px', zIndex: 200,
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)', overflow: 'hidden',
+                  }}>
+                    <button onClick={() => { navigate('/organizer/profile'); setShowUserMenu(false) }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.65rem 1rem', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '0.85rem', cursor: 'pointer' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                    >
+                      <User size={14} style={{ color: 'var(--teal)' }} /> My Profile
+                    </button>
+                    <div style={{ height: '1px', background: 'var(--border)' }} />
+                    <button onClick={handleLogout}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.65rem 1rem', background: 'none', border: 'none', color: '#0891b2', fontSize: '0.85rem', cursor: 'pointer' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(8,145,178,0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                    >
+                      <LogOut size={14} /> Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
-            <button id="logout-btn" className="nav-logout-btn" onClick={handleLogout}>
-              <LogOut size={14} /> Logout
-            </button>
 
             {/* Hamburger — mobile only */}
-            <button
-              className="hamburger-btn"
-              onClick={() => setMobileMenuOpen(v => !v)}
-              aria-label="Toggle menu"
-            >
+            <button className="hamburger-btn" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Toggle menu">
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
@@ -69,22 +110,16 @@ export default function OrganizerNavbar() {
       {mobileMenuOpen && (
         <div className="mobile-nav-dropdown">
           {navLinks.map(link => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.end}
+            <NavLink key={link.to} to={link.to} end={link.end}
               className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`}
-              onClick={handleNavClick}
-            >
+              onClick={handleNavClick}>
               {link.label}
             </NavLink>
           ))}
           <div className="mobile-nav-divider" />
-          {currentUser && (
-            <div className="mobile-nav-user">👤 {currentUser.name}</div>
-          )}
+          {currentUser && <div className="mobile-nav-user">👤 {currentUser.name}</div>}
           <button className="mobile-nav-logout" onClick={handleLogout}>
-            <LogOut size={14} /> Logout
+            <LogOut size={14} /> Sign Out
           </button>
         </div>
       )}

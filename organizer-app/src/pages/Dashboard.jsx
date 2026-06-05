@@ -151,7 +151,7 @@ function DiscoveryAnalytics({ events, organizerId, bookings }) {
 }
 
 export default function OrganizerDashboard() {
-  const { currentUser, updateUser } = useAuth()
+  const { currentUser, updateUser, logout } = useAuth()
   const navigate = useNavigate()
   const [events, setEvents] = useState([])
   const [bookings, setBookings] = useState([])
@@ -481,6 +481,31 @@ export default function OrganizerDashboard() {
             )}
           </div>
         )}
+      </div>
+      {/* ── Account & Sign Out ──────────────────────────── */}
+      <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>{currentUser?.name}</div>
+          <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{currentUser?.email}</div>
+          <span style={{ display: 'inline-block', background: 'var(--teal-dim)', color: 'var(--teal)', borderRadius: '999px', padding: '0.2rem 0.65rem', fontSize: '0.75rem', fontWeight: 600, marginTop: '0.4rem' }}>
+            Organizer
+          </span>
+        </div>
+        <button
+          id="dashboard-signout-btn"
+          onClick={() => { logout(); sessionStorage.clear(); navigate('/organizer/login') }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.45rem',
+            padding: '0.65rem 1.25rem', background: 'transparent',
+            border: '1.5px solid var(--teal)', borderRadius: '10px',
+            color: 'var(--teal)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(8,145,178,0.08)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          Sign Out
+        </button>
       </div>
     </div>
   )

@@ -70,6 +70,26 @@ export async function getAIInsights(organizerEvents) {
   }
 }
 
+function getOrganizerFallback(userMessage) {
+  const msg = userMessage.toLowerCase()
+  if (msg.includes('create') || msg.includes('event') || msg.includes('wizard')) {
+    return `__LIMITED__Use the **Create Event** button to start the 5-step wizard: Title → AI Suggestions → Date & Venue → Pricing → Terms. Your event will be submitted for admin review after creation. 🎪`
+  }
+  if (msg.includes('approval') || msg.includes('pending') || msg.includes('status') || msg.includes('rejected')) {
+    return `__LIMITED__Events go through four statuses: **Pending** (awaiting review), **Approved** (live & selling), **Changes Requested** (edit and resubmit), or **Rejected**. Check the Dashboard for current status. ✅`
+  }
+  if (msg.includes('wallet') || msg.includes('earning') || msg.includes('revenue') || msg.includes('payout')) {
+    return `__LIMITED__Your wallet balance is shown on the **Dashboard**. Earnings from ticket sales are credited automatically. Visit the **Wallet** page for detailed transaction history. 💰`
+  }
+  if (msg.includes('booking') || msg.includes('ticket') || msg.includes('attendee')) {
+    return `__LIMITED__View all bookings for your events on the **Dashboard** (recent) or the **Bookings** page (full history). You can search by attendee name or event title. 🎫`
+  }
+  if (msg.includes('ai') || msg.includes('insight') || msg.includes('description')) {
+    return `__LIMITED__Use **AI Insights** on the Dashboard to get smart performance recommendations. The **Create Event** wizard also has an AI description generator and category suggester. ✨`
+  }
+  return `__LIMITED__I can help with creating events, understanding approvals, managing bookings, and using AI features. What do you need help with? 🎪`
+}
+
 export async function getAIChatResponse(userMessage, userRole = 'organizer', userName = '') {
   try {
     const systemPrompt = userRole === 'organizer'
@@ -78,7 +98,7 @@ export async function getAIChatResponse(userMessage, userRole = 'organizer', use
     return await callClaude({ systemPrompt, userMessage, maxTokens: 200 })
   } catch (err) {
     console.error('getAIChatResponse error:', err)
-    return "I'm having trouble connecting right now. Please try again in a moment!"
+    return getOrganizerFallback(userMessage)
   }
 }
 

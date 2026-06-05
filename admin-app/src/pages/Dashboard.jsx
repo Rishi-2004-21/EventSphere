@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
+import { useAuth } from '../context/AuthContext'
 import { getAIPlatformInsights } from '../ai/claudeAI'
 import { PieChart, Pie, Cell, BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
-import { DollarSign, Ticket, Activity, ShieldAlert, Users, TrendingUp, Filter } from 'lucide-react'
+import { DollarSign, Ticket, Activity, ShieldAlert, Users, TrendingUp, Filter, LogOut } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 function formatCurrency(n) { return `₹${Number(n || 0).toLocaleString('en-IN')}` }
 
 export default function AdminDashboard() {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
   const [platformStats, setPlatformStats] = useState({ revenue: 0, pendingEvents: 0, totalUsers: 0, activeEvents: 0, totalBookings: 0, uniqueAttendees: 0, totalFees: 0, totalPayouts: 0 })
   const [events, setEvents] = useState([])
   const [recentBookings, setRecentBookings] = useState([])
@@ -153,8 +157,8 @@ export default function AdminDashboard() {
                     {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                   </Pie>
                   <ReTooltip 
-                    contentStyle={{ background: '#1a2235', border: '1px solid #2a3a55', borderRadius: '8px' }}
-                    itemStyle={{ color: '#f0f4ff' }}
+                    contentStyle={{ background: '#0f1729', border: '1px solid #1e3a5f', borderRadius: '8px' }}
+                    itemStyle={{ color: '#ffffff' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -165,7 +169,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* AI Platform Insights */}
-        <div className="chart-card" style={{ background: 'rgba(220,38,38,0.04)', borderColor: 'rgba(220,38,38,0.2)' }}>
+        <div className="chart-card" style={{ background: 'rgba(225,29,72,0.04)', borderColor: 'rgba(225,29,72,0.2)' }}>
           <h3 className="chart-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Activity size={18} style={{ color: 'var(--accent)' }} /> System Diagnostics
           </h3>
@@ -173,6 +177,30 @@ export default function AdminDashboard() {
             {aiInsights || <div className="spinner" style={{ width: '24px', height: '24px', borderTopColor: 'var(--accent)', borderWidth: '2px' }} />}
           </div>
         </div>
+      </div>
+
+      {/* ── Admin Sign Out ──────────────────────────── */}
+      <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>SuperAdmin</div>
+          <span style={{ display: 'inline-block', background: 'rgba(225,29,72,0.12)', color: 'var(--accent)', borderRadius: '999px', padding: '0.2rem 0.65rem', fontSize: '0.75rem', fontWeight: 600 }}>
+            Administrator
+          </span>
+        </div>
+        <button
+          id="admin-signout-btn"
+          onClick={() => { logout(); sessionStorage.clear(); navigate('/admin/login') }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.45rem',
+            padding: '0.65rem 1.25rem', background: 'transparent',
+            border: '1.5px solid var(--accent)', borderRadius: '10px',
+            color: 'var(--accent)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(225,29,72,0.08)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          <LogOut size={15} /> Sign Out
+        </button>
       </div>
     </div>
   )

@@ -6,8 +6,8 @@ import { useAuth } from '../context/AuthContext'
 const QUICK_REPLIES = [
   { label: '🎟️ How to book', text: 'How do I book a ticket?' },
   { label: '📋 My tickets', text: 'Where can I see my tickets?' },
-  { label: '💳 Payment info', text: 'What are the payment fees?' },
   { label: '🔍 Find events', text: 'How do I find events by category?' },
+  { label: '❤️ Wishlist', text: 'How do I save events to my wishlist?' },
 ]
 
 function matchAttendeeKeyword(msg) {
@@ -19,7 +19,7 @@ function matchAttendeeKeyword(msg) {
     return `You can find all your tickets on the **My Tickets** page 🎫\n\nEach ticket shows a QR code you can use at the venue. You can also download or print any ticket from there!`
   }
   if (m.includes('payment fee') || m.includes('platform fee') || m.includes('how much fee') || m.includes('fee breakdown') || m.includes('payment info')) {
-    return `EventSphere's payment breakdown 💳\n\n• **Platform Fee**: 10% of ticket price\n• **Organizer Receives**: 90% instantly\n\nFor example, on a ₹1,000 ticket:\n• EventSphere earns ₹100\n• Organizer earns ₹900`
+    return `To see the ticket price for any event, visit the **Event Detail** page. The price shown is the full amount you pay — no surprises at checkout! 🎟️`
   }
   if (m.includes('category') || m.includes('find event') || m.includes('filter') || m.includes('search') || m.includes('browse')) {
     return `Finding events is easy! 🔍\n\n• Use the **category tabs** (Tech, Art, Fitness, Cultural, etc.) on the Discover page\n• Use the **search bar** to search by event name\n• Use the **city filter** to find events near you\n• Scroll the **Trending** section for popular events!`
@@ -87,7 +87,9 @@ export default function ChatBot() {
         setMessages(prev => [...prev, { role: 'assistant', text: keywordReply, time: new Date() }])
       } else {
         const reply = await getAIChatResponse(trimmed, 'attendee', userName)
-        setMessages(prev => [...prev, { role: 'assistant', text: reply, time: new Date() }])
+        const isLimited = reply.startsWith('__LIMITED__')
+        const cleanText = isLimited ? reply.replace('__LIMITED__', '') : reply
+        setMessages(prev => [...prev, { role: 'assistant', text: cleanText, limited: isLimited, time: new Date() }])
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', text: "Sorry, I'm having trouble right now. Please try again in a moment!", time: new Date() }])
@@ -174,6 +176,11 @@ export default function ChatBot() {
                 <div className={`bubble ${msg.role === 'user' ? 'user' : 'ai'}`}>
                   {renderText(msg.text)}
                 </div>
+                {msg.limited && (
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                    ⚡ AI assistant is in limited mode
+                  </span>
+                )}
                 <span className="bubble-time">{msg.time ? formatTime(msg.time) : ''}</span>
               </div>
             </div>

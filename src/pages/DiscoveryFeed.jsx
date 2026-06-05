@@ -167,8 +167,8 @@ export default function DiscoveryFeed() {
   return (
     <div className="page-wrapper">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-        <div className="page-header" style={{ marginBottom: 0 }}>
+      <div className="discovery-header">
+        <div className="page-header header-no-margin">
           <h1 className="page-title">Discover Events</h1>
           <p className="page-subtitle">AI-curated picks just for you</p>
         </div>
@@ -187,9 +187,9 @@ export default function DiscoveryFeed() {
         <>
           {/* Trending Strip */}
           {topTrending.length > 0 && (
-            <section style={{ marginBottom: '2.5rem' }}>
+            <section className="trending-section">
               <div className="section-heading">
-                <Flame size={16} style={{ color: '#fb7185' }} />
+                <Flame size={16} className="trending-icon" />
                 Trending Hot
               </div>
               <div className="trending-strip">
@@ -203,7 +203,7 @@ export default function DiscoveryFeed() {
                     />
                     <div className="trending-card-body">
                       <div className="trending-card-title">{evt.title}</div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div className="trending-card-footer">
                         <span className="trending-card-price">{formatCurrency(evt.price)}</span>
                         <span className="badge badge-hot">🔥</span>
                       </div>
@@ -215,7 +215,7 @@ export default function DiscoveryFeed() {
           )}
 
           {/* Category Tabs */}
-          <div className="category-tabs" style={{ marginBottom: '1.5rem' }}>
+          <div className="category-tabs tabs-with-margin">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}

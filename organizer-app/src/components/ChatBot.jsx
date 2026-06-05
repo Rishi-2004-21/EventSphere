@@ -19,7 +19,7 @@ function matchOrganizerKeyword(msg) {
     return `Event Approval Process 📋\n\nAfter submitting, your event goes to the admin team for review:\n\n• **Pending** — Under review\n• **Approved** — Live and bookable 🎉\n• **Changes Requested** — Admin has feedback for you\n• **Rejected** — With reason provided\n\nYou'll receive a notification at each stage. Most events are reviewed within 24 hours!`
   }
   if (m.includes('earning') || m.includes('revenue') || m.includes('money') || m.includes('payment') || m.includes('income') || m.includes('how much do i get')) {
-    return `Your Earnings Breakdown 💰\n\nFor every ticket sold:\n• **You receive: 90%** — credited instantly to your wallet\n• **Platform fee: 10%** — goes to EventSphere\n\nExample: On a ₹1,000 ticket, you earn ₹900 instantly!\n\nCheck your **Wallet** page to see your balance and all transactions.`
+    return `Check your **Wallet** page from the navbar to see your current balance, transaction history, and all earnings from ticket sales. 💰`
   }
   if (m.includes('booking') || m.includes('view booking') || m.includes('see booking') || m.includes('my booking') || m.includes('attendee list')) {
     return `Viewing Your Bookings 📊\n\nGo to the **Bookings** section in your dashboard or click **Bookings** in the navbar.\n\nYou'll see:\n• All attendees who booked your events\n• Booking dates and amounts\n• Attendee contact details\n• Real-time updates as new bookings come in!`
@@ -80,7 +80,9 @@ export default function ChatBot() {
         setMessages(prev => [...prev, { role: 'assistant', text: keywordReply, time: new Date() }])
       } else {
         const reply = await getAIChatResponse(trimmed, 'organizer', userName)
-        setMessages(prev => [...prev, { role: 'assistant', text: reply, time: new Date() }])
+        const isLimited = reply.startsWith('__LIMITED__')
+        const cleanText = isLimited ? reply.replace('__LIMITED__', '') : reply
+        setMessages(prev => [...prev, { role: 'assistant', text: cleanText, limited: isLimited, time: new Date() }])
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', text: "Sorry, I'm having trouble right now. Please try again!", time: new Date() }])
@@ -157,6 +159,11 @@ export default function ChatBot() {
                 <div className={`bubble ${msg.role === 'user' ? 'user' : 'ai'}`}>
                   {renderText(msg.text)}
                 </div>
+                {msg.limited && (
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                    ⚡ AI assistant is in limited mode
+                  </span>
+                )}
                 <span className="bubble-time">{msg.time ? formatTime(msg.time) : ''}</span>
               </div>
             </div>

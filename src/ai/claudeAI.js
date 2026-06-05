@@ -70,6 +70,30 @@ export async function getAIInsights(organizerEvents) {
   }
 }
 
+// Keyword-based fallback responses (used when API is unavailable)
+function getFallbackResponse(userMessage) {
+  const msg = userMessage.toLowerCase()
+  if (msg.includes('book') || msg.includes('ticket') || msg.includes('checkout')) {
+    return { text: "To book a ticket, find an event you like on the Discover page, click on it, then click **Book Now** and follow the steps. Free events show a **Claim Free Ticket** button instead! 🎟️", limited: true }
+  }
+  if (msg.includes('event') || msg.includes('find') || msg.includes('discover') || msg.includes('search')) {
+    return { text: "Use the **Discover** page to browse events. Use the category tabs (Art, Tech, Fitness…) and the search bar to filter events by name or city. 🔍", limited: true }
+  }
+  if (msg.includes('profile') || msg.includes('account') || msg.includes('interest') || msg.includes('setting')) {
+    return { text: "Visit your **Profile** page to update your interests, manage your wishlist, and control notification preferences. Your interests help us personalize your discovery feed! ✨", limited: true }
+  }
+  if (msg.includes('ticket') || msg.includes('my ticket') || msg.includes('qr')) {
+    return { text: "Find all your booked tickets on the **My Tickets** page. Each ticket shows a QR code that you can use for entry at the event venue. 🎫", limited: true }
+  }
+  if (msg.includes('wishlist') || msg.includes('save') || msg.includes('favourite') || msg.includes('favorite')) {
+    return { text: "Click the ❤️ heart icon on any event to add it to your **Wishlist**. You can view all saved events on your Profile page.", limited: true }
+  }
+  if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey') || msg.includes('help')) {
+    return { text: "Hi there! 👋 I'm your EventSphere assistant. I can help you **discover events**, **book tickets**, manage your **wishlist**, or navigate the app. What would you like to do?", limited: true }
+  }
+  return { text: "I'm here to help you discover and book events on EventSphere. Try browsing the **Discover** page, or ask me about booking tickets, your wishlist, or your profile! 🎉", limited: true }
+}
+
 export async function getAIChatResponse(userMessage, userRole = 'attendee', userName = '') {
   // ── Pre-filter: block any financial/pricing question before calling API ────
   const pricingKeywords = [
@@ -97,6 +121,8 @@ export async function getAIChatResponse(userMessage, userRole = 'attendee', user
     return await callClaude({ systemPrompt, userMessage, maxTokens: 200 })
   } catch (err) {
     console.error('getAIChatResponse error:', err)
-    return "I'm having trouble connecting right now. Please try again in a moment!"
+    // Return keyword-based fallback — never show raw error to user
+    const fallback = getFallbackResponse(userMessage)
+    return `__LIMITED__${fallback.text}`
   }
 }

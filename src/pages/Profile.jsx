@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
-import { User, Save, Heart, Calendar, MapPin, Bell, BellOff, Sparkles, SlidersHorizontal } from 'lucide-react'
+import { User, Save, Heart, Calendar, MapPin, Bell, BellOff, Sparkles, SlidersHorizontal, LogOut } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const INTEREST_OPTIONS = ['Art', 'Tech', 'Fitness', 'Cultural', 'Community', 'Lifestyle']
@@ -376,6 +376,45 @@ export default function Profile() {
             ? '✅ You will receive reminder emails when organizers you have  booked with create new events.'
             : '🔕 You have opted out of event reminder emails from organizers.'}
         </p>
+      </div>
+
+      {/* ── Account & Sign Out ──────────────────────────── */}
+      <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+        <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
+          Account Settings
+        </h2>
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+            {currentUser.email}
+          </div>
+          <span style={{
+            display: 'inline-block', background: 'var(--purple-dim)', color: 'var(--purple)',
+            borderRadius: '999px', padding: '0.2rem 0.65rem', fontSize: '0.75rem', fontWeight: 600,
+          }}>
+            Attendee
+          </span>
+        </div>
+        <button
+          id="profile-signout-btn"
+          onClick={() => {
+            if (typeof logout === 'function') logout()
+            sessionStorage.clear()
+            toast.success('You have been signed out successfully.')
+            navigate('/login')
+          }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            width: '100%', padding: '0.75rem 1.25rem',
+            background: 'transparent', border: '1.5px solid #ef4444',
+            borderRadius: '10px', color: '#ef4444', fontSize: '0.9rem',
+            fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          <LogOut size={16} />
+          Sign Out
+        </button>
       </div>
     </div>
   )

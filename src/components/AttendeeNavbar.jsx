@@ -1,6 +1,6 @@
 import { useNavigate, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Bell, LogOut, X, Menu } from 'lucide-react'
+import { Bell, LogOut, X, Menu, User } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
 import { formatDistanceToNow } from 'date-fns'
@@ -33,48 +33,34 @@ export default function AttendeeNavbar() {
 
   useEffect(() => {
     function handleClick(e) {
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
-        setShowNotifPanel(false)
-      }
+      if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotifPanel(false)
     }
-    if (showNotifPanel) document.addEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [showNotifPanel])
+  }, [])
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setIsMenuOpen(false)
-  }, [navigate])
+  useEffect(() => { setIsMenuOpen(false) }, [navigate])
 
   async function fetchNotifications() {
     const { data } = await supabase
-      .from('notifications')
-      .select('*', { count: 'exact' })
+      .from('notifications').select('*', { count: 'exact' })
       .eq('user_id', currentUser.id)
-      .order('created_at', { ascending: false })
-      .limit(20)
-
+      .order('created_at', { ascending: false }).limit(20)
     setNotifications(data || [])
     setUnreadCount((data || []).filter(n => !n.is_read).length)
   }
 
   async function markAllRead() {
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('user_id', currentUser.id)
-      .eq('is_read', false)
+    await supabase.from('notifications').update({ is_read: true })
+      .eq('user_id', currentUser.id).eq('is_read', false)
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
     setUnreadCount(0)
   }
 
   function handleLogout() {
     logout()
+    sessionStorage.clear()
     navigate('/login')
-  }
-
-  function handleNavClick() {
-    setIsMenuOpen(false)
   }
 
   const navLinks = [
@@ -88,16 +74,13 @@ export default function AttendeeNavbar() {
     <>
       <nav className="navbar">
         <div className="navbar-inner">
-          <span className="navbar-logo">EventSphere</span>
+          <span className="navbar-logo gradient-text">EventSphere</span>
 
           {/* Desktop nav links */}
           <div className="navbar-links navbar-links-desktop">
             {navLinks.map(link => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-              >
+              <NavLink key={link.to} to={link.to}
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                 {link.label}
               </NavLink>
             ))}
@@ -106,13 +89,8 @@ export default function AttendeeNavbar() {
           <div className="navbar-right">
             {/* Notification Bell */}
             <div ref={notifRef} style={{ position: 'relative' }}>
-              <button
-                id="notif-bell-btn"
-                className="notif-btn"
-                title="Notifications"
-                onClick={() => setShowNotifPanel(v => !v)}
-                style={{ position: 'relative' }}
-              >
+              <button id="notif-bell-btn" className="notif-btn" title="Notifications"
+                onClick={() => setShowNotifPanel(v => !v)} style={{ position: 'relative' }}>
                 <Bell size={18} />
                 {unreadCount > 0 && (
                   <span style={{
@@ -120,7 +98,7 @@ export default function AttendeeNavbar() {
                     minWidth: '18px', height: '18px', background: '#ef4444',
                     borderRadius: '9px', display: 'flex', alignItems: 'center',
                     justifyContent: 'center', fontSize: '10px', fontWeight: 700,
-                    color: 'white', padding: '0 3px', border: '2px solid #0a0f1e',
+                    color: 'white', padding: '0 3px', border: '2px solid #070d1a',
                     lineHeight: 1, pointerEvents: 'none',
                   }}>
                     {unreadCount > 9 ? '9+' : unreadCount}
@@ -137,9 +115,7 @@ export default function AttendeeNavbar() {
                     </span>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       {unreadCount > 0 && (
-                        <button className="notif-mark-read-btn" onClick={markAllRead}>
-                          Mark all read
-                        </button>
+                        <button className="notif-mark-read-btn" onClick={markAllRead}>Mark all read</button>
                       )}
                       <button className="chatbot-close-btn" onClick={() => setShowNotifPanel(false)}>
                         <X size={14} />
@@ -152,65 +128,63 @@ export default function AttendeeNavbar() {
                         <Bell size={24} style={{ opacity: 0.3 }} />
                         <span>No notifications yet</span>
                       </div>
-                    ) : (
-                      notifications.map(n => (
-                        <div key={n.id} className={`notif-item ${!n.is_read ? 'unread' : ''}`}>
-                          <div className="notif-item-dot" style={{ background: n.is_read ? 'transparent' : 'var(--purple)' }} />
-                          <div className="notif-item-content">
-                            <p className="notif-item-msg">{n.message}</p>
-                            <span className="notif-item-time">
-                              {n.created_at
-                                ? formatDistanceToNow(new Date(n.created_at), { addSuffix: true })
-                                : 'just now'}
-                            </span>
-                          </div>
+                    ) : notifications.map(n => (
+                      <div key={n.id} className={`notif-item ${!n.is_read ? 'unread' : ''}`}>
+                        <div className="notif-item-dot" style={{ background: n.is_read ? 'transparent' : 'var(--purple)' }} />
+                        <div className="notif-item-content">
+                          <p className="notif-item-msg">{n.message}</p>
+                          <span className="notif-item-time">
+                            {n.created_at ? formatDistanceToNow(new Date(n.created_at), { addSuffix: true }) : 'just now'}
+                          </span>
                         </div>
-                      ))
-                    )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
 
+            {/* User chip — desktop only — links to profile (logout lives on Profile page) */}
             {currentUser && (
-              <span className="nav-user-name nav-user-name-desktop">{currentUser.name?.split(' ')[0]}</span>
+              <button
+                className="nav-user-name-desktop nav-user-chip"
+                onClick={() => navigate('/profile')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.35rem',
+                  background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)',
+                  borderRadius: '999px', padding: '0.3rem 0.75rem', cursor: 'pointer',
+                  color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 600,
+                }}
+                title="Go to profile"
+              >
+                <User size={14} style={{ color: 'var(--purple)' }} />
+                {currentUser.name?.split(' ')[0]}
+              </button>
             )}
-            <button id="logout-btn" className="nav-logout-btn nav-logout-desktop" onClick={handleLogout}>
-              <LogOut size={14} /> Logout
-            </button>
 
-            {/* Hamburger Button — mobile only */}
-            <button
-              id="hamburger-btn"
-              className="hamburger-btn"
-              onClick={() => setIsMenuOpen(v => !v)}
-              aria-label="Toggle menu"
-            >
+            {/* Hamburger — mobile only */}
+            <button id="hamburger-btn" className="hamburger-btn"
+              onClick={() => setIsMenuOpen(v => !v)} aria-label="Toggle menu">
               {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile dropdown */}
       {isMenuOpen && (
         <div className="mobile-nav-dropdown">
           {navLinks.map(link => (
-            <NavLink
-              key={link.to}
-              to={link.to}
+            <NavLink key={link.to} to={link.to}
               className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`}
-              onClick={handleNavClick}
-            >
+              onClick={() => setIsMenuOpen(false)}>
               {link.label}
             </NavLink>
           ))}
           <div className="mobile-nav-divider" />
-          {currentUser && (
-            <div className="mobile-nav-user">👤 {currentUser.name}</div>
-          )}
+          {currentUser && <div className="mobile-nav-user">👤 {currentUser.name}</div>}
           <button className="mobile-nav-logout" onClick={handleLogout}>
-            <LogOut size={14} /> Logout
+            <LogOut size={14} /> Sign Out
           </button>
         </div>
       )}
