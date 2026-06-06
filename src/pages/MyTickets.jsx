@@ -1,48 +1,56 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
-import { Ticket, CalendarCheck, Clock, ShieldCheck } from 'lucide-react'
+import { Ticket, CalendarCheck, Clock, ShieldCheck, RefreshCw } from 'lucide-react'
 import { isAfter, parseISO } from 'date-fns'
 import TicketGenerator from '../components/TicketGenerator'
 
 export default function MyTickets() {
   const { currentUser } = useAuth()
+  const location = useLocation()
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all') // 'all' | 'upcoming' | 'past'
+  const [refreshing, setRefreshing] = useState(false)
+  const [filter, setFilter] = useState('all')
   const [consentedEventIds, setConsentedEventIds] = useState(new Set())
 
+  const fetchTickets = useCallback(async (silent = false) => {
+    if (!currentUser) return
+    if (!silent) setLoading(true)
+    else setRefreshing(true)
+
+    const { data: bookings } = await supabase
+      .from('bookings')
+      .select('id, event_id, attendee_name, attendee_email, ticket_qr_code, booked_at, amount_paid, payment_status, organizer_name, event_title, event_date, event_city, payment_id, upi_transaction_id')
+      .eq('attendee_id', currentUser.id)
+      .order('booked_at', { ascending: false })
+
+    if (!bookings) { setLoading(false); setRefreshing(false); return }
+
+    const enriched = await Promise.all(
+      bookings.map(async (b) => {
+        const { data: evt } = await supabase
+          .from('events')
+          .select('title, date, venue, city, category, organizer_name, description, organizer_id, time')
+          .eq('id', b.event_id)
+          .single()
+        return { ...b, event: evt }
+      })
+    )
+
+    setTickets(enriched)
+    setLoading(false)
+    setRefreshing(false)
+  }, [currentUser])
+
+  // Refetch on every navigation to this page (location.key is unique per navigate() call)
   useEffect(() => {
-    async function fetchTickets() {
-      if (!currentUser) return
+    fetchTickets(false)
+  }, [fetchTickets, location.key])
 
-      const { data: bookings } = await supabase
-        .from('bookings')
-        .select('id, event_id, attendee_name, ticket_qr_code, booked_at, amount_paid, payment_status, organizer_name, event_title, event_date, event_city')
-        .eq('attendee_id', currentUser.id)
-        .order('booked_at', { ascending: false })
-
-      if (!bookings) { setLoading(false); return }
-
-      // Fetch full event details for each booking
-      const enriched = await Promise.all(
-        bookings.map(async (b) => {
-          const { data: evt } = await supabase
-            .from('events')
-            .select('title, date, venue, city, category, organizer_name, description, organizer_id')
-            .eq('id', b.event_id)
-            .single()
-          return { ...b, event: evt }
-        })
-      )
-
-      setTickets(enriched)
-      setLoading(false)
-    }
-
-    fetchTickets()
-
-    // Fetch consent records for this user
+  // Fetch consent records
+  useEffect(() => {
     async function fetchConsents() {
       if (!currentUser) return
       const { data } = await supabase
@@ -72,31 +80,40 @@ export default function MyTickets() {
 
   return (
     <div className="page-wrapper">
-      <div className="page-header">
-        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Ticket size={24} style={{ color: 'var(--purple)' }} /> My Tickets
-        </h1>
-        <p className="page-subtitle">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''} booked</p>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Ticket size={24} style={{ color: 'var(--purple)' }} /> My Tickets
+          </h1>
+          <p className="page-subtitle">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''} booked</p>
+        </div>
+
+        {/* Manual refresh button */}
+        <button
+          onClick={() => fetchTickets(true)}
+          disabled={refreshing}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.4rem',
+            background: 'none', border: '1px solid var(--border)',
+            borderRadius: 8, padding: '0.5rem 0.875rem',
+            color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.83rem',
+            opacity: refreshing ? 0.6 : 1,
+          }}
+        >
+          <RefreshCw size={13} style={{ animation: refreshing ? 'spin 0.7s linear infinite' : 'none' }} />
+          {refreshing ? 'Refreshing…' : 'Refresh'}
+        </button>
       </div>
 
       {/* Filter Tabs */}
       <div className="ticket-filter-tabs">
-        <button
-          className={`ticket-filter-tab ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
+        <button className={`ticket-filter-tab ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
           All ({tickets.length})
         </button>
-        <button
-          className={`ticket-filter-tab ${filter === 'upcoming' ? 'active' : ''}`}
-          onClick={() => setFilter('upcoming')}
-        >
+        <button className={`ticket-filter-tab ${filter === 'upcoming' ? 'active' : ''}`} onClick={() => setFilter('upcoming')}>
           <CalendarCheck size={14} /> Upcoming
         </button>
-        <button
-          className={`ticket-filter-tab ${filter === 'past' ? 'active' : ''}`}
-          onClick={() => setFilter('past')}
-        >
+        <button className={`ticket-filter-tab ${filter === 'past' ? 'active' : ''}`} onClick={() => setFilter('past')}>
           <Clock size={14} /> Past
         </button>
       </div>
@@ -114,26 +131,25 @@ export default function MyTickets() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {filtered.map((ticket) => (
-          <div key={ticket.id}>
-            {consentedEventIds.has(ticket.event_id) && (
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-                background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.35)',
-                borderRadius: '999px', padding: '0.25rem 0.75rem',
-                fontSize: '0.75rem', color: '#10b981', fontWeight: 600,
-                marginBottom: '0.6rem',
-              }}>
-                <ShieldCheck size={13} /> Terms Agreed
-              </div>
-            )}
-            <TicketGenerator
-              booking={ticket}
-              event={ticket.event}
-            />
-          </div>
+            <div key={ticket.id}>
+              {consentedEventIds.has(ticket.event_id) && (
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                  background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.35)',
+                  borderRadius: '999px', padding: '0.25rem 0.75rem',
+                  fontSize: '0.75rem', color: '#10b981', fontWeight: 600,
+                  marginBottom: '0.6rem',
+                }}>
+                  <ShieldCheck size={13} /> Terms Agreed
+                </div>
+              )}
+              <TicketGenerator booking={ticket} event={ticket.event} />
+            </div>
           ))}
         </div>
       )}
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
