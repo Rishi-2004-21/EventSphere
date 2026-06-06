@@ -66,7 +66,7 @@ export default function CreateEvent() {
 
   const [form, setForm] = useState({
     title: '', category: 'Tech', description: '',
-    date: '', venue: '', city: 'Mumbai', capacity: '',
+    date: '', time: '', venue: '', city: 'Mumbai', capacity: '',
     pricingType: 'fixed', price: '', earlyBirdPrice: '', standardPrice: '',
     useDefaultTerms: true,
     customTerms: '',
@@ -221,6 +221,7 @@ export default function CreateEvent() {
       organizer_id: currentUser.id,
       organizer_name: currentUser.name,
       date: form.date,
+      time: form.time || null,
       venue: form.venue,
       city: form.city,
       capacity: Number(form.capacity) || 100,
@@ -396,6 +397,15 @@ export default function CreateEvent() {
             <div className="form-group">
               <label className="form-label">Event Date</label>
               <input id="event-date" type="date" className="form-input" value={form.date} onChange={(e) => upd('date', e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Event Time <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>(optional)</span></label>
+              <input id="event-time" type="time" className="form-input" value={form.time} onChange={(e) => upd('time', e.target.value)} />
+              {form.time && (
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                  🕔 Event starts at {new Date(`2000-01-01T${form.time}`).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                </div>
+              )}
             </div>
             <div className="form-group">
               <label className="form-label">Venue Name</label>

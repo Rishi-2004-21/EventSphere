@@ -7,6 +7,7 @@ import {
   ArrowLeft, Info, CreditCard, CheckCircle,
   Mail, Calendar, MapPin, Ticket, Copy, Check, X,
 } from 'lucide-react'
+import QRCode from 'react-qr-code'
 import toast from 'react-hot-toast'
 import { formatCurrency } from '../utils/formatCurrency'
 
@@ -417,74 +418,35 @@ export default function Checkout() {
                   </p>
                 </div>
 
-                {/* QR Code image — with loading/error states */}
+                {/* ── UPI Deep Link QR (auto-fills amount in GPay/PhonePe/Paytm) ── */}
                 <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-                  {UPI_QR_URL ? (
-                    <>
-                      {/* Loading state */}
-                      {!qrImageLoaded && !qrImageError && (
-                        <div style={{
-                          width: '100%', height: 244, display: 'flex', flexDirection: 'column',
-                          alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
-                          background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)',
-                          borderRadius: 10,
-                        }}>
-                          <div style={{ width: 28, height: 28, border: '3px solid rgba(139,92,246,0.3)', borderTopColor: 'var(--purple)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Loading QR code…</span>
-                        </div>
-                      )}
-
-                      {/* Error state */}
-                      {qrImageError && (
-                        <div style={{
-                          background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.3)',
-                          borderRadius: 10, padding: '1.25rem', textAlign: 'center',
-                        }}>
-                          <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⚠️</div>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fca5a5', marginBottom: '0.4rem' }}>QR code image could not load</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>Please use the UPI ID below to pay manually</div>
-                          <div style={{ fontFamily: 'monospace', fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '0.75rem', background: 'rgba(0,0,0,0.3)', padding: '0.5rem 1rem', borderRadius: 6 }}>{UPI_ID}</div>
-                        </div>
-                      )}
-
-                      {/* Loaded state */}
-                      <div style={{ display: qrImageLoaded ? 'inline-block' : 'none', background: 'white', padding: 12, borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
-                        <img
-                          src={UPI_QR_URL}
-                          alt="UPI Payment QR Code"
-                          style={{ display: 'block', width: 220, height: 220, objectFit: 'contain' }}
-                          onLoad={() => { setQrImageLoaded(true); setQrImageError(false) }}
-                          onError={() => { setQrImageError(true); setQrImageLoaded(false) }}
-                        />
-                      </div>
-
-                      {/* Save QR link for mobile users */}
-                      {qrImageLoaded && (
-                        <div style={{ marginTop: '0.6rem' }}>
-                          <a
-                            href={UPI_QR_URL}
-                            download="upi-payment-qr.png"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ fontSize: '0.78rem', color: 'var(--purple-light)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
-                          >
-                            📥 Tap to save QR code
-                          </a>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div style={{
-                      width: '100%', height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      textAlign: 'center', background: 'rgba(255,255,255,0.03)',
-                      border: '2px dashed var(--border)', borderRadius: 10,
-                      fontSize: '0.8rem', color: 'var(--text-muted)', padding: '1rem',
-                    }}>
-                      UPI QR code image not configured.<br />
-                      Please add VITE_UPI_QR_URL to your .env file.
-                    </div>
-                  )}
+                  {/* Primary: Dynamic QR with amount pre-filled */}
+                  <div style={{ display: 'inline-block', background: 'white', padding: 14, borderRadius: 12, boxShadow: '0 4px 24px rgba(0,0,0,0.35)' }}>
+                    <QRCode
+                      value={`upi://pay?pa=${UPI_ID}&pn=EventSphere&am=${price.toFixed(2)}&cu=INR&tn=EventSphere+Booking`}
+                      size={220}
+                      level="H"
+                      fgColor="#0a0f1e"
+                      bgColor="#ffffff"
+                      style={{ display: 'block' }}
+                    />
+                  </div>
+                  <div style={{ marginTop: '0.6rem', fontSize: '0.78rem', color: '#10b981', fontWeight: 600 }}>
+                    ✅ Amount ₹{price.toFixed(2)} is pre-filled — just scan and pay
+                  </div>
+                  {/* Tap to save: link to static Supabase QR image as fallback */}
+                  <div style={{ marginTop: '0.35rem' }}>
+                    <a
+                      href={UPI_QR_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: 'none' }}
+                    >
+                      📥 Tap here if QR doesn't scan
+                    </a>
+                  </div>
                 </div>
+
 
                 {/* UPI ID */}
                 <div style={{ marginBottom: '0.85rem' }}>
