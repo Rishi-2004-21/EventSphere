@@ -11,10 +11,11 @@ import toast from 'react-hot-toast'
 import { formatCurrency } from '../utils/formatCurrency'
 
 // UPI payment config
-// TODO: When VITE_RAZORPAY_KEY_ID is added to .env,
-// replace the UPI section with the Razorpay payment modal.
-const UPI_QR_URL = import.meta.env.VITE_UPI_QR_URL || ''
+// TODO: Replace with Razorpay modal when VITE_RAZORPAY_KEY_ID is configured
+const UPI_QR_URL = import.meta.env.VITE_UPI_QR_URL ||
+  'https://foexoyakzskviskmkqqn.supabase.co/storage/v1/object/public/assets/upi%20id.jpeg'
 const UPI_ID = import.meta.env.VITE_UPI_ID || '8125432020@pthdfc'
+
 
 /* ══════════════════════════════════════════════════════════════
    SHARED BOOKING CREATION FUNCTION
