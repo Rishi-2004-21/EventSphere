@@ -1,6 +1,6 @@
 import { useNavigate, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Bell, LogOut, Menu, X, User, ChevronDown } from 'lucide-react'
+import { Bell, LogOut, Menu, X, User, ChevronDown, QrCode } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 export default function OrganizerNavbar() {
@@ -27,10 +27,11 @@ export default function OrganizerNavbar() {
   function handleNavClick() { setMobileMenuOpen(false) }
 
   const navLinks = [
-    { to: '/organizer', label: 'Dashboard', end: true },
-    { to: '/organizer/create', label: 'Create Event' },
-    { to: '/organizer/wallet', label: 'Wallet' },
-    { to: '/organizer/profile', label: 'Profile' },
+    { to: '/dashboard', label: 'Dashboard', end: true },
+    { to: '/create', label: 'Create Event' },
+    { to: '/scanner', label: 'Scan Tickets', icon: <QrCode size={14} style={{ color: '#0891b2' }} /> },
+    { to: '/wallet', label: 'Wallet' },
+    { to: '/profile', label: 'Profile' },
   ]
 
   return (
@@ -45,7 +46,9 @@ export default function OrganizerNavbar() {
           <div className="navbar-links">
             {navLinks.map(link => (
               <NavLink key={link.to} to={link.to} end={link.end}
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                {link.icon && link.icon}
                 {link.label}
               </NavLink>
             ))}
