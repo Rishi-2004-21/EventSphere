@@ -1,49 +1,58 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { nanoid } from 'nanoid'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
 import {
   ArrowLeft, Info, CreditCard, CheckCircle,
-  Mail, Calendar, MapPin, Ticket, Clock, AlertTriangle
+  Mail, Calendar, MapPin, Ticket, Copy, Check, X,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { formatCurrency, calculatePaymentSplit } from '../utils/formatCurrency'
+import { formatCurrency } from '../utils/formatCurrency'
+
+// UPI payment config
+// TODO: When VITE_RAZORPAY_KEY_ID is added to .env,
+// replace the UPI section with the Razorpay payment modal.
+const UPI_QR_URL = import.meta.env.VITE_UPI_QR_URL || ''
+const UPI_ID = import.meta.env.VITE_UPI_ID || '8125432020@pthdfc'
 
 /* ══════════════════════════════════════════════════════════════
    SHARED BOOKING CREATION FUNCTION
-   Called by BOTH free-ticket flow and Razorpay success handler.
+   Called by BOTH free-ticket flow and UPI success handler.
    Pass paymentId = '' for free tickets.
    Throws on insert error so caller can handle it.
 ══════════════════════════════════════════════════════════════ */
 async function createBookingRecord(event, currentUser, paymentId = '') {
-  // ── 1. Generate IDs ────────────────────────────────────────
   const bookingId = `ES-${nanoid(8).toUpperCase()}`
 
-  // Structured QR code with real booking details so scanning gives useful info
+  // Structured QR payload — scannable by the organizer portal
   const ticketQrCode = JSON.stringify({
-    bookingId,
-    eventId: event.id,
-    eventTitle: event.title,
-    attendeeName: currentUser.name,
-    eventDate: event.date,
-    eventVenue: event.venue,
+    booking_id: bookingId,
+    event_id: event.id,
+    event_title: event.title,
+    attendee_name: currentUser.name,
+    attendee_email: currentUser.email || '',
+    event_date: event.date,
+    event_venue: event.venue,
+    event_city: event.city,
+    amount_paid: Number(event.price) || 0,
+    payment_status: 'confirmed',
+    upi_transaction_id: paymentId || null,
+    verified: false,
     platform: 'EventSphere',
   })
 
-  // ── 2. Calculate payment values ────────────────────────────
   const rawPrice = Number(event.price) || 0
   let amountPaid = 0
   let platformFee = 0
   let organizerReceived = 0
 
   if (rawPrice > 0) {
-    platformFee = Math.round(rawPrice * 0.10 * 100) / 100        // 10%, 2dp
+    platformFee = Math.round(rawPrice * 0.10 * 100) / 100
     organizerReceived = Math.round((rawPrice - platformFee) * 100) / 100
     amountPaid = rawPrice
   }
 
-  // ── 3. Build complete insert object (only confirmed columns) ─
   const insertRow = {
     id: bookingId,
     event_id: event.id,
@@ -55,7 +64,9 @@ async function createBookingRecord(event, currentUser, paymentId = '') {
     platform_fee: platformFee,
     organizer_received: organizerReceived,
     payment_status: 'confirmed',
-    payment_id: paymentId || '',          // '' for free, Razorpay ID for paid
+    payment_id: paymentId || '',
+    payment_method: rawPrice > 0 ? 'upi' : 'free',
+    upi_transaction_id: rawPrice > 0 ? (paymentId || null) : null,
     event_title: event.title,
     event_date: event.date,
     event_city: event.city,
@@ -63,17 +74,13 @@ async function createBookingRecord(event, currentUser, paymentId = '') {
     organizer_name: event.organizer_name || '',
   }
 
-  // ── 4. Primary insert ──────────────────────────────────────
-  const { data, error: insertError } = await supabase
-    .from('bookings')
-    .insert([insertRow])
-
+  const { error: insertError } = await supabase.from('bookings').insert([insertRow])
   if (insertError) {
     console.error('BOOKING INSERT ERROR', insertError)
     throw new Error(insertError.message)
   }
 
-  // ── 5. Update event ticket count (non-critical) ────────────
+  // Update event ticket count (non-critical)
   try {
     await supabase
       .from('events')
@@ -82,49 +89,37 @@ async function createBookingRecord(event, currentUser, paymentId = '') {
         booking_count: (event.booking_count || 0) + 1,
       })
       .eq('id', event.id)
-  } catch (err) {
-    console.warn('tickets_sold update failed (non-critical):', err)
-  }
+  } catch (e) { console.warn('tickets_sold update failed:', e) }
 
-  // ── 6. Update organizer wallet (non-critical) ──────────────
+  // Update organizer wallet (non-critical)
   if (event.organizer_id && organizerReceived > 0) {
     try {
       const { data: org } = await supabase
-        .from('users')
-        .select('wallet_balance')
-        .eq('id', event.organizer_id)
-        .single()
+        .from('users').select('wallet_balance').eq('id', event.organizer_id).single()
       if (org) {
         await supabase
           .from('users')
           .update({ wallet_balance: +((org.wallet_balance || 0) + organizerReceived).toFixed(2) })
           .eq('id', event.organizer_id)
       }
-    } catch (err) {
-      console.warn('wallet update failed (non-critical):', err)
-    }
+    } catch (e) { console.warn('wallet update failed:', e) }
   }
 
-  // ── 7. Update platform revenue (non-critical) ──────────────
+  // Update platform revenue (non-critical)
   if (platformFee > 0) {
     try {
       const { data: rev } = await supabase
-        .from('platform_revenue')
-        .select('total_revenue')
-        .eq('id', 1)
-        .single()
+        .from('platform_revenue').select('total_revenue').eq('id', 1).single()
       if (rev) {
         await supabase
           .from('platform_revenue')
           .update({ total_revenue: +((rev.total_revenue || 0) + platformFee).toFixed(2) })
           .eq('id', 1)
       }
-    } catch (err) {
-      console.warn('platform_revenue update failed (non-critical):', err)
-    }
+    } catch (e) { console.warn('platform_revenue update failed:', e) }
   }
 
-  // ── 8. Notify organizer (non-critical) ─────────────────────
+  // Notify organizer (non-critical)
   if (event.organizer_id) {
     try {
       await supabase.from('notifications').insert([{
@@ -134,12 +129,27 @@ async function createBookingRecord(event, currentUser, paymentId = '') {
         is_read: false,
         created_at: new Date().toISOString(),
       }])
-    } catch (err) {
-      console.warn('organizer notification failed (non-critical):', err)
-    }
+    } catch (e) { console.warn('organizer notification failed:', e) }
   }
 
-  // Return booking id for navigation
+  // Send confirmation email (non-critical)
+  try {
+    await supabase.functions.invoke('send-booking-confirmation', {
+      body: {
+        attendee_name: currentUser.name,
+        attendee_email: currentUser.email,
+        event_title: event.title,
+        event_date: event.date,
+        event_venue: event.venue,
+        event_city: event.city,
+        booking_id: bookingId,
+        organizer_name: event.organizer_name || 'EventSphere',
+        amount_paid: amountPaid,
+        ticket_qr_code: ticketQrCode,
+      },
+    })
+  } catch (e) { console.warn('confirmation email failed:', e.message) }
+
   return bookingId
 }
 
@@ -163,7 +173,6 @@ function BookingSuccessOverlay({ event, bookingId, amountPaid, attendeeEmail, on
   return (
     <div className="booking-success-overlay">
       <div className="booking-success-card">
-        {/* Animated Checkmark */}
         <div className="success-checkmark-wrap">
           <svg className="success-checkmark-svg" viewBox="0 0 52 52">
             <circle className="success-circle" cx="26" cy="26" r="25" fill="none" />
@@ -174,7 +183,6 @@ function BookingSuccessOverlay({ event, bookingId, amountPaid, attendeeEmail, on
         <h2 className="success-title">Booking Confirmed!</h2>
         <p className="success-subtitle">Your ticket is on its way 🎉</p>
 
-        {/* Summary */}
         <div className="success-summary-box">
           <div className="success-summary-row">
             <span className="success-summary-label">Event</span>
@@ -208,28 +216,16 @@ function BookingSuccessOverlay({ event, bookingId, amountPaid, attendeeEmail, on
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="success-btn-row">
-          <button
-            className="btn-purple"
-            onClick={onViewTicket}
-            disabled={!ready}
-            style={{ flex: 1, opacity: ready ? 1 : 0.5 }}
-          >
+          <button className="btn-purple" onClick={onViewTicket} disabled={!ready} style={{ flex: 1, opacity: ready ? 1 : 0.5 }}>
             <Ticket size={16} />
             {ready ? 'View My Ticket' : `View Ticket (${countdown})`}
           </button>
-          <button
-            className="btn-secondary"
-            onClick={onMyTickets}
-            disabled={!ready}
-            style={{ flex: 1, opacity: ready ? 1 : 0.5 }}
-          >
+          <button className="btn-secondary" onClick={onMyTickets} disabled={!ready} style={{ flex: 1, opacity: ready ? 1 : 0.5 }}>
             My Tickets
           </button>
         </div>
 
-        {/* Email note */}
         <div className="success-email-note">
           <Mail size={12} />
           <span>Confirmation sent to <strong>{attendeeEmail}</strong></span>
@@ -251,139 +247,66 @@ export default function Checkout() {
   const [processing, setProcessing] = useState(false)
   const [successData, setSuccessData] = useState(null)
 
+  // UPI payment state
+  const [transactionId, setTransactionId] = useState('')
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [upiCopied, setUpiCopied] = useState(false)
+
   useEffect(() => {
     supabase.from('events').select('*').eq('id', id).single()
       .then(({ data }) => { setEvent(data); setLoading(false) })
   }, [id])
 
-  // ── Check Razorpay key configuration ──────────────────────
-  const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID
-  const isRazorpayConfigured = (
-    razorpayKey &&
-    razorpayKey.trim() !== '' &&
-    !razorpayKey.startsWith('your_key') &&
-    !razorpayKey.startsWith('YOUR_KEY') &&
-    !razorpayKey.includes('YOUR_') &&
-    razorpayKey !== 'rzp_test_YOUR_KEY_HERE'
-  )
+  function handleCopyUpiId() {
+    navigator.clipboard.writeText(UPI_ID).then(() => {
+      setUpiCopied(true)
+      toast.success('UPI ID copied to clipboard!')
+      setTimeout(() => setUpiCopied(false), 2500)
+    })
+  }
 
-  /* ── FREE TICKET HANDLER ──────────────────────────────── */
   async function handleClaimFreeTicket() {
     if (!event || !currentUser) return
     setProcessing(true)
     try {
       const bookingId = await createBookingRecord(event, currentUser, '')
       toast.success('🎟️ Your free ticket has been claimed!')
-      navigate('/my-tickets')
+      setSuccessData({ bookingId, amountPaid: 0 })
     } catch (err) {
-      console.error('FREE TICKET CLAIM ERROR:', err)
       toast.error(err.message || 'Booking failed. Please try again.')
     } finally {
       setProcessing(false)
     }
   }
 
-  /* ── RAZORPAY BYPASS (when key is not set) ────────────── */
-  async function handleBypassPay() {
+  async function handleConfirmPayment() {
     if (!event || !currentUser) return
+    setShowConfirmModal(false)
     setProcessing(true)
     try {
-      const bookingId = await createBookingRecord(event, currentUser, `TEST-${nanoid(8)}`)
-      toast.success('🎟️ Test booking created successfully!')
+      const bookingId = await createBookingRecord(event, currentUser, transactionId.trim())
+      toast.success('🎉 Booking confirmed! Check your email for ticket details.')
       setSuccessData({ bookingId, amountPaid: Number(event.price) })
     } catch (err) {
-      console.error('BYPASS PAY ERROR:', err)
       toast.error(err.message || 'Booking failed. Please try again.')
     } finally {
       setProcessing(false)
     }
   }
 
-  /* ── RAZORPAY PAY NOW HANDLER ─────────────────────────── */
-  function handlePayNow() {
-    if (!event || !currentUser) return
-
-    // Guard: Razorpay key not configured
-    if (!isRazorpayConfigured) {
-      toast.error('Payment gateway not configured. Please contact support.')
-      return
-    }
-
-    if (!window.Razorpay) {
-      toast.error('Razorpay not loaded. Please refresh the page.')
-      return
-    }
-
-    setProcessing(true)
-    const price = Number(event.price)
-
-    const options = {
-      key: razorpayKey,
-      amount: Math.round(price * 100), // paise
-      currency: 'INR',
-      name: 'EventSphere',
-      description: event.title,
-      image: 'https://eventsphere.in/logo.png',
-      prefill: {
-        name: currentUser.name || '',
-        email: currentUser.email || '',
-        contact: currentUser.phone || '',
-      },
-      theme: { color: '#8b5cf6' },
-      modal: {
-        ondismiss: () => {
-          setProcessing(false)
-          toast('Payment cancelled', { icon: '❌' })
-        },
-      },
-      handler: async (response) => {
-        // Razorpay payment succeeded — now create the booking
-        try {
-          const razorpayPaymentId = response.razorpay_payment_id
-          const bookingId = await createBookingRecord(event, currentUser, razorpayPaymentId)
-          toast.success('🎟️ Booking confirmed!')
-          setSuccessData({ bookingId, amountPaid: price })
-        } catch (err) {
-          console.error('POST-PAYMENT BOOKING ERROR:', err)
-          toast.error(
-            `Payment received but booking failed: ${err.message}. ` +
-            `Please contact support with your payment ID: ${response.razorpay_payment_id}`
-          )
-        } finally {
-          setProcessing(false)
-        }
-      },
-    }
-
-    try {
-      const rzp = new window.Razorpay(options)
-      rzp.on('payment.failed', (response) => {
-        setProcessing(false)
-        toast.error(`Payment failed: ${response.error?.description || 'Please try again.'}`)
-      })
-      rzp.open()
-    } catch (err) {
-      setProcessing(false)
-      toast.error('Could not open payment window. Please try again.')
-    }
-  }
-
-  /* ── Render ───────────────────────────────────────────── */
   if (loading) return <div className="loading-wrap"><div className="spinner" /></div>
   if (!event) return (
     <div className="page-wrapper">
-      <div className="empty-state">
-        <div className="empty-title">Event not found</div>
-      </div>
+      <div className="empty-state"><div className="empty-title">Event not found</div></div>
     </div>
   )
 
   const price = Number(event.price) || 0
   const isFreeEvent = price === 0 || event.pricing_type === 'free'
+  const txnValid = transactionId.trim().length >= 8
 
   return (
     <>
-      {/* Booking Success Overlay */}
       {successData && (
         <BookingSuccessOverlay
           event={event}
@@ -402,7 +325,8 @@ export default function Checkout() {
         <h1 className="page-title">Checkout</h1>
 
         <div className="checkout-grid">
-          {/* ── Order Summary ──────────────────────────────── */}
+
+          {/* ── Left: Order Summary ── */}
           <div className="checkout-card">
             <div className="checkout-card-title">Order Summary</div>
             <div style={{ marginBottom: '1rem' }}>
@@ -442,12 +366,12 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* ── Payment Section ────────────────────────────── */}
+          {/* ── Right: Payment Section ── */}
           <div className="checkout-card">
-            <div className="checkout-card-title">{isFreeEvent ? 'Free Ticket' : 'Payment Details'}</div>
+            <div className="checkout-card-title">{isFreeEvent ? 'Free Ticket' : 'Pay with UPI'}</div>
 
             {isFreeEvent ? (
-              /* ── Free Event Flow ─── */
+              /* ── Free Event ── */
               <div>
                 <div style={{
                   background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)',
@@ -460,7 +384,6 @@ export default function Checkout() {
                     <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>No payment required. Claim your ticket instantly.</div>
                   </div>
                 </div>
-
                 <button
                   id="claim-free-ticket-btn"
                   className="btn-purple"
@@ -475,88 +398,214 @@ export default function Checkout() {
                 </div>
               </div>
             ) : (
-              /* ── Paid Event Flow ─── */
+              /* ── Paid Event — UPI QR Flow ──
+                 TODO: Replace with Razorpay modal when VITE_RAZORPAY_KEY_ID is configured */
               <div>
-                {/* Test Credentials Box */}
-                <div className="razorpay-test-box">
-                  <div className="razorpay-test-header">
-                    <Info size={14} style={{ color: '#3b82f6', flexShrink: 0 }} />
-                    <span>Test Payment Credentials</span>
-                  </div>
-                  <div className="razorpay-test-grid">
-                    <div className="razorpay-test-section">
-                      <div className="razorpay-test-label">💳 Test Card</div>
-                      <div className="razorpay-test-mono">4111 1111 1111 1111</div>
-                      <div className="razorpay-test-sub">Expiry: Any future date (e.g., 12/26) · CVV: Any 3 digits</div>
+
+                {/* Blue info box */}
+                <div style={{
+                  display: 'flex', gap: '0.6rem', alignItems: 'flex-start',
+                  background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)',
+                  borderRadius: '0.75rem', padding: '0.85rem 1rem', marginBottom: '1.25rem',
+                }}>
+                  <Info size={15} style={{ color: '#60a5fa', flexShrink: 0, marginTop: 1 }} />
+                  <p style={{ fontSize: '0.82rem', color: '#93c5fd', lineHeight: 1.6, margin: 0 }}>
+                    Scan the QR code below using any UPI app like <strong>GPay</strong>, <strong>PhonePe</strong>, <strong>Paytm</strong>, or your bank app. Pay the exact amount shown and then enter your transaction ID to confirm your booking.
+                  </p>
+                </div>
+
+                {/* QR Code image */}
+                <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+                  {UPI_QR_URL ? (
+                    <div style={{ display: 'inline-block', background: 'white', padding: 12, borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
+                      <img
+                        src={UPI_QR_URL}
+                        alt="UPI Payment QR Code"
+                        style={{ display: 'block', width: 220, height: 220, objectFit: 'contain' }}
+                        onError={(e) => {
+                          e.target.parentElement.innerHTML = '<div style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;color:#999;font-size:0.75rem;text-align:center;padding:1rem">QR image failed to load</div>'
+                        }}
+                      />
                     </div>
-                    <div className="razorpay-test-section">
-                      <div className="razorpay-test-label">📱 Test UPI</div>
-                      <div className="razorpay-test-mono">success@razorpay</div>
+                  ) : (
+                    <div style={{
+                      width: '100%', height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      textAlign: 'center', background: 'rgba(255,255,255,0.03)',
+                      border: '2px dashed var(--border)', borderRadius: 10,
+                      fontSize: '0.8rem', color: 'var(--text-muted)', padding: '1rem',
+                    }}>
+                      UPI QR code image not configured.<br />
+                      Please add VITE_UPI_QR_URL to your .env file.
                     </div>
-                    <div className="razorpay-test-section">
-                      <div className="razorpay-test-label">🏦 Net Banking</div>
-                      <div className="razorpay-test-sub">Select any bank and use test credentials shown in modal</div>
-                    </div>
+                  )}
+                </div>
+
+                {/* UPI ID */}
+                <div style={{ marginBottom: '0.85rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>UPI ID</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', flex: 1 }}>
+                      {UPI_ID}
+                    </span>
+                    <button
+                      onClick={handleCopyUpiId}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+                        background: upiCopied ? 'rgba(16,185,129,0.15)' : 'rgba(139,92,246,0.15)',
+                        border: `1px solid ${upiCopied ? 'rgba(16,185,129,0.35)' : 'rgba(139,92,246,0.35)'}`,
+                        borderRadius: 6, padding: '0.25rem 0.65rem', cursor: 'pointer',
+                        color: upiCopied ? '#10b981' : 'var(--purple-light)',
+                        fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.2s',
+                      }}
+                    >
+                      {upiCopied ? <><Check size={12} /> Copied!</> : <><Copy size={12} /> Copy</>}
+                    </button>
                   </div>
                 </div>
 
-                {/* Pay Now Button — shown when Razorpay IS configured */}
-                {isRazorpayConfigured && (
-                  <button
-                    id="razorpay-pay-btn"
-                    className="razorpay-pay-btn"
-                    onClick={handlePayNow}
-                    disabled={processing}
-                    style={{ width: '100%', marginTop: '1rem' }}
-                  >
-                    {processing ? (
-                      <span className="btn-spinner" />
-                    ) : (
-                      <>
-                        <span className="razorpay-logo-text">₹</span>
-                        Pay {formatCurrency(price)} — Secure via Razorpay
-                      </>
+                {/* Amount */}
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Amount to Pay</div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--purple)', letterSpacing: '-0.5px' }}>
+                    {formatCurrency(price)}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.2rem' }}>
+                    ⚠ Please pay the exact amount shown above
+                  </div>
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--border)', marginBottom: '1.25rem' }} />
+
+                {/* Transaction ID input */}
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                    Enter Transaction ID <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      id="upi-transaction-id"
+                      type="text"
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      placeholder="Paste your UPI transaction ID here (e.g. TXN123456789)"
+                      style={{
+                        width: '100%', boxSizing: 'border-box',
+                        background: 'var(--bg-dark)',
+                        border: `1px solid ${transactionId && !txnValid ? '#ef4444' : 'var(--border)'}`,
+                        borderRadius: 8, padding: '0.75rem 2.5rem 0.75rem 0.875rem',
+                        color: 'var(--text-primary)', fontSize: '0.9rem',
+                        fontFamily: 'monospace', outline: 'none',
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = 'var(--purple)' }}
+                      onBlur={(e) => { e.target.style.borderColor = transactionId && !txnValid ? '#ef4444' : 'var(--border)' }}
+                    />
+                    {txnValid && (
+                      <Check size={16} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: '#10b981' }} />
                     )}
-                  </button>
+                  </div>
+                  <p style={{ fontSize: '0.77rem', color: 'var(--text-muted)', marginTop: '0.4rem', lineHeight: 1.5 }}>
+                    After paying, open your UPI app → go to transaction history → copy the transaction ID and paste it here.
+                  </p>
+                </div>
+
+                {/* Confirm button */}
+                <button
+                  id="confirm-upi-payment-btn"
+                  className="btn-purple"
+                  style={{
+                    width: '100%', fontSize: '1rem', padding: '0.9rem', gap: '0.6rem',
+                    opacity: (!txnValid || processing) ? 0.4 : 1,
+                    cursor: (!txnValid || processing) ? 'not-allowed' : 'pointer',
+                  }}
+                  onClick={() => { if (txnValid && !processing) setShowConfirmModal(true) }}
+                  disabled={!txnValid || processing}
+                >
+                  {processing ? <span className="btn-spinner" /> : <><CheckCircle size={18} /> Confirm Payment &amp; Book Ticket</>}
+                </button>
+
+                {!txnValid && (
+                  <p style={{ textAlign: 'center', fontSize: '0.77rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                    Enter your transaction ID above to enable this button
+                  </p>
                 )}
 
-                {/* Bypass Button — only shown when Razorpay is NOT configured */}
-                {!isRazorpayConfigured && (
-                  <div style={{ marginTop: '1rem' }}>
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                      background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
-                      borderRadius: '8px', padding: '0.65rem 0.85rem', marginBottom: '0.75rem',
-                      fontSize: '0.8rem', color: '#f59e0b',
-                    }}>
-                      <AlertTriangle size={14} style={{ flexShrink: 0 }} />
-                      Payment gateway not configured. Using test booking mode.
-                    </div>
-                    <button
-                      id="bypass-pay-btn"
-                      className="btn-purple"
-                      onClick={handleBypassPay}
-                      disabled={processing}
-                      style={{ width: '100%', fontSize: '1rem', padding: '0.9rem', gap: '0.6rem' }}
-                    >
-                      {processing ? <span className="btn-spinner" /> : <><CreditCard size={18} /> Pay and Book (Test Mode)</>}
-                    </button>
-                  </div>
-                )}
+                <div className="lock-note" style={{ marginTop: '0.75rem' }}>
+                  <span>🔒 Your ticket is generated immediately after confirming payment</span>
+                </div>
               </div>
             )}
-
-            <div className="lock-note" style={{ marginTop: '0.75rem' }}>
-              <span>{isFreeEvent
-                ? '✅ Your ticket is completely free — no card details needed'
-                : isRazorpayConfigured
-                  ? '🔒 Your payment is secured with 256-bit SSL encryption'
-                  : '⚠️ Add VITE_RAZORPAY_KEY_ID to .env to enable live payments'
-              }</span>
-            </div>
           </div>
         </div>
       </div>
+
+      {/* ── UPI Confirmation Modal ─────────────────────────── */}
+      {showConfirmModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: '1rem',
+        }}>
+          <div style={{
+            background: 'var(--bg-card)', border: '1px solid var(--border)',
+            borderRadius: 18, padding: '2rem', maxWidth: 420, width: '100%',
+            boxShadow: '0 12px 50px rgba(0,0,0,0.6)', position: 'relative',
+          }}>
+            <button
+              onClick={() => setShowConfirmModal(false)}
+              style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
+            >
+              <X size={18} />
+            </button>
+
+            <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>💳</div>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>
+                Confirm Payment
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                Please confirm that you have paid{' '}
+                <strong style={{ color: 'var(--purple)' }}>{formatCurrency(price)}</strong>{' '}
+                to UPI ID{' '}
+                <strong style={{ fontFamily: 'monospace' }}>{UPI_ID}</strong>.
+              </p>
+            </div>
+
+            <div style={{ background: 'var(--bg-dark)', borderRadius: 8, padding: '0.85rem 1rem', marginBottom: '1.25rem', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+                Transaction ID
+              </div>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: 700, wordBreak: 'break-all' }}>
+                {transactionId}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                style={{
+                  flex: 1, padding: '0.75rem', background: 'none',
+                  border: '1px solid var(--border)', borderRadius: 10,
+                  color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                id="yes-i-have-paid-btn"
+                onClick={handleConfirmPayment}
+                style={{
+                  flex: 2, padding: '0.75rem', background: '#10b981',
+                  border: 'none', borderRadius: 10, color: 'white',
+                  cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                }}
+              >
+                <CheckCircle size={16} /> Yes, I Have Paid
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
