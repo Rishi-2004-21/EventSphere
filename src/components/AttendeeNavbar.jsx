@@ -57,10 +57,14 @@ export default function AttendeeNavbar() {
     setUnreadCount(0)
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    try {
+      const { supabase } = await import('../supabase')
+      await supabase.auth.signOut().catch(() => {})
+    } catch {}
     logout()
     sessionStorage.clear()
-    navigate('/login')
+    navigate('/login', { replace: true })
   }
 
   const navLinks = [

@@ -18,7 +18,7 @@ const CATEGORY_COLORS = {
 }
 
 export default function Profile() {
-  const { currentUser, updateUser } = useAuth()
+  const { currentUser, updateUser, logout } = useAuth()
   const navigate = useNavigate()
   const [interests, setInterests] = useState(currentUser?.interests || [])
   const [wishlistEvents, setWishlistEvents] = useState([])
@@ -396,11 +396,16 @@ export default function Profile() {
         </div>
         <button
           id="profile-signout-btn"
-          onClick={() => {
-            if (typeof logout === 'function') logout()
+          onClick={async () => {
+            try {
+              // Sign out from Supabase session too
+              const { supabase } = await import('../supabase')
+              await supabase.auth.signOut().catch(() => {})
+            } catch {}
+            logout()
             sessionStorage.clear()
             toast.success('You have been signed out successfully.')
-            navigate('/login')
+            navigate('/login', { replace: true })
           }}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
