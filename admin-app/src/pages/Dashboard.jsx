@@ -20,18 +20,18 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     async function fetchData() {
-      const [revRes, evtRes, userRes, bkgRes] = await Promise.all([
-        supabase.from('platform_revenue').select('amount_collected'),
+      const [evtRes, userRes, bkgRes] = await Promise.all([
         supabase.from('events').select('*').order('created_at', { ascending: false }),
         supabase.from('users').select('id', { count: 'exact' }),
-        supabase.from('bookings').select('id, amount_paid, platform_fee, organizer_received, attendee_id, booked_at').order('booked_at', { ascending: false }).limit(20)
+        supabase.from('bookings').select('id, amount_paid, platform_fee, organizer_received, attendee_id, booked_at').order('booked_at', { ascending: false })
       ])
 
-      const totalRev = (revRes.data || []).reduce((s, r) => s + Number(r.amount_collected), 0)
       const evts = evtRes.data || []
       const allBookings = bkgRes.data || []
       const totalFees = allBookings.reduce((s, b) => s + (Number(b.platform_fee) || 0), 0)
       const totalPayouts = allBookings.reduce((s, b) => s + (Number(b.organizer_received) || 0), 0)
+      const totalRev = totalFees  // Platform revenue = sum of all platform fees
+
       const uniqueAttendees = new Set(allBookings.map(b => b.attendee_id)).size
       
       setPlatformStats({

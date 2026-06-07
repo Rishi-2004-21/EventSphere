@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { format, parseISO } from 'date-fns'
-import { formatCurrency } from '../utils/formatCurrency'
+
+// Always show ₹ symbol, never return "Free"
+function fmt(n) {
+  return `₹${Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
 
 export default function Revenue() {
   const [bookings, setBookings] = useState([])
@@ -75,19 +79,19 @@ export default function Revenue() {
         <div className="stat-card orange-top">
           <div className="stat-card-label">Total Platform Earnings</div>
           <div className="stat-card-value" style={{ color: 'var(--orange)' }}>
-            {formatCurrency(totals.platformFee)}
+            {fmt(totals.platformFee)}
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-card-label">Total Gross Volume</div>
           <div className="stat-card-value" style={{ color: '#fff' }}>
-            {formatCurrency(totals.grossVolume)}
+            {fmt(totals.grossVolume)}
           </div>
         </div>
         <div className="stat-card green-top">
           <div className="stat-card-label">Total Organizer Payouts</div>
           <div className="stat-card-value" style={{ color: 'var(--green)' }}>
-            {formatCurrency(totals.organizerPayout)}
+            {fmt(totals.organizerPayout)}
           </div>
         </div>
       </div>
@@ -129,9 +133,9 @@ export default function Revenue() {
                 <tr key={b.id}>
                   <td className="font-bold">{b.events?.title || 'Unknown Event'}</td>
                   <td>{b.events?.organizer_name || 'Unknown Organizer'}</td>
-                  <td>{formatCurrency(b.amount_paid)}</td>
-                  <td style={{ color: 'var(--red)', fontWeight: 600 }}>{formatCurrency(b.platform_fee)}</td>
-                  <td style={{ color: 'var(--green)', fontWeight: 600 }}>{formatCurrency(b.organizer_received)}</td>
+                  <td>{fmt(b.amount_paid)}</td>
+                  <td style={{ color: 'var(--red)', fontWeight: 600 }}>{fmt(b.platform_fee)}</td>
+                  <td style={{ color: 'var(--green)', fontWeight: 600 }}>{fmt(b.organizer_received)}</td>
                 </tr>
               ))}
               {bookings.length === 0 && (

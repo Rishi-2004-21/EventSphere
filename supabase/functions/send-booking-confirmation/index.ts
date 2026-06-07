@@ -4,6 +4,7 @@
 // Set secret: supabase secrets set BREVO_API_KEY=xkeysib-...
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -215,6 +216,27 @@ serve(async (req) => {
     }
 
     const brevoData = await brevoResponse.json()
+
+    // Write to email_logs so admin Email Logs page shows this entry
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? ""
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      if (supabaseUrl && supabaseServiceKey) {
+        const adminClient = createClient(supabaseUrl, supabaseServiceKey)
+        await adminClient.from("email_logs").insert({
+          recipient_name: attendee_name || null,
+          recipient_email: attendee_email || null,
+          event_title: event_title || null,
+          organizer_name: organizer_name || null,
+          email_subject: `Your ticket is confirmed for ${event_title}`,
+          status: "sent",
+          sent_at: new Date().toISOString(),
+        })
+      }
+    } catch (logErr) {
+      // Don't fail the main response if logging fails
+      console.error("email_logs insert failed:", logErr)
+    }
 
     return new Response(
       JSON.stringify({ success: true, messageId: brevoData.messageId }),
