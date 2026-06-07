@@ -1,6 +1,7 @@
 // Supabase Edge Function: send-booking-confirmation
-// Deploy with: supabase functions deploy send-booking-confirmation
-// Set secret: supabase secrets set RESEND_API_KEY=re_xxxx
+// Uses Brevo (formerly Sendinblue) — 300 free emails/day, sends to any email address
+// Deploy: supabase functions deploy send-booking-confirmation
+// Set secret: supabase secrets set BREVO_API_KEY=xkeysib-...
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
@@ -28,15 +29,15 @@ serve(async (req) => {
       organizer_name,
     } = await req.json()
 
-    const resendApiKey = Deno.env.get("RESEND_API_KEY")
-    if (!resendApiKey) {
+    const brevoApiKey = Deno.env.get("BREVO_API_KEY")
+    if (!brevoApiKey) {
       return new Response(
-        JSON.stringify({ error: "RESEND_API_KEY not configured" }),
+        JSON.stringify({ error: "BREVO_API_KEY not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       )
     }
 
-    // Build QR code URL using a public QR service
+    // Build QR code image via public API
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(ticket_qr_code)}&bgcolor=ffffff&color=0a0f1e`
 
     // Format amount
@@ -66,7 +67,7 @@ serve(async (req) => {
             </td>
           </tr>
 
-          <!-- Green checkmark -->
+          <!-- Confirmation -->
           <tr>
             <td style="background:#1a2235;padding:40px 32px 24px;text-align:center;">
               <div style="width:72px;height:72px;background:#10b981;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;">
@@ -77,7 +78,7 @@ serve(async (req) => {
             </td>
           </tr>
 
-          <!-- Event details card -->
+          <!-- Event Details -->
           <tr>
             <td style="padding:0 32px 24px;">
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#111827;border-radius:12px;border:1px solid #2a3a55;overflow:hidden;">
@@ -93,7 +94,7 @@ serve(async (req) => {
                       <tr>
                         <td style="padding:8px 0;border-bottom:1px solid #2a3a55;">
                           <span style="font-size:11px;color:#556080;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">📍 Venue</span><br/>
-                          <span style="font-size:15px;color:#f0f4ff;font-weight:600;">${event_venue || "TBA"}, ${event_city || ""}</span>
+                          <span style="font-size:15px;color:#f0f4ff;font-weight:600;">${event_venue || "TBA"}${event_city ? ", " + event_city : ""}</span>
                         </td>
                       </tr>
                       <tr>
@@ -109,14 +110,14 @@ serve(async (req) => {
             </td>
           </tr>
 
-          <!-- Booking ref -->
+          <!-- Booking Reference -->
           <tr>
             <td style="padding:0 32px 24px;">
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#111827;border-radius:12px;border:1px solid #2a3a55;">
                 <tr>
                   <td style="padding:20px;text-align:center;">
                     <div style="font-size:11px;color:#556080;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Booking Reference</div>
-                    <div style="font-size:18px;color:#7c3aed;font-weight:700;font-family:monospace;letter-spacing:2px;">${booking_id?.toUpperCase()}</div>
+                    <div style="font-size:18px;color:#7c3aed;font-weight:700;font-family:monospace;letter-spacing:2px;">${(booking_id || "").toUpperCase()}</div>
                   </td>
                 </tr>
               </table>
@@ -181,33 +182,42 @@ serve(async (req) => {
 </html>
     `
 
-    // Send via Resend
-    const resendResponse = await fetch("https://api.resend.com/emails", {
+    // Send via Brevo (Sendinblue) API
+    const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${resendApiKey}`,
+        "api-key": brevoApiKey,
         "Content-Type": "application/json",
+        "accept": "application/json",
       },
       body: JSON.stringify({
-        from: "EventSphere <onboarding@resend.dev>",
-        to: [attendee_email],
+        sender: {
+          name: "EventSphere",
+          email: "rishienjamuri@gmail.com",
+        },
+        to: [
+          {
+            email: attendee_email,
+            name: attendee_name || "Attendee",
+          },
+        ],
         subject: `Your ticket is confirmed for ${event_title} 🎟️`,
-        html: emailHtml,
+        htmlContent: emailHtml,
       }),
     })
 
-    if (!resendResponse.ok) {
-      const err = await resendResponse.text()
+    if (!brevoResponse.ok) {
+      const err = await brevoResponse.text()
       return new Response(
-        JSON.stringify({ error: `Resend API error: ${err}` }),
+        JSON.stringify({ error: `Brevo API error: ${err}` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       )
     }
 
-    const resendData = await resendResponse.json()
+    const brevoData = await brevoResponse.json()
 
     return new Response(
-      JSON.stringify({ success: true, id: resendData.id }),
+      JSON.stringify({ success: true, messageId: brevoData.messageId }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     )
   } catch (err) {
