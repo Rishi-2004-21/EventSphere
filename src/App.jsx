@@ -62,15 +62,15 @@ function AppInner() {
     testConnection()
   }, [])
 
-  // Apply Theme to body
+  // Apply Theme to root element
   useEffect(() => {
     const theme = state?.theme || 'dark'
-    document.body.setAttribute('data-theme', theme)
+    document.documentElement.className = theme === 'dark' ? 'dark-theme' : 'light-theme'
   }, [state?.theme])
 
   if (authLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg-dark)' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#0f172a' }}>
         <LoadingSpinner />
       </div>
     )
