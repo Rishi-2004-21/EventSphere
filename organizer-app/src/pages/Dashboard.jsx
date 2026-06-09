@@ -238,6 +238,35 @@ export default function OrganizerDashboard() {
         <p className="page-subtitle">Welcome back, {currentUser?.name?.split(' ')[0]}</p>
       </div>
 
+      {(!currentUser?.upi_id || !currentUser?.upi_qr_url) && (
+        <div style={{
+          background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
+          borderRadius: '12px', padding: '1.25rem', marginBottom: '2rem',
+          display: 'flex', alignItems: 'flex-start', gap: '1rem',
+          boxShadow: '0 4px 12px rgba(245,158,11,0.05)'
+        }}>
+          <div style={{ background: 'rgba(245,158,11,0.2)', padding: '0.5rem', borderRadius: '50%', color: '#f59e0b' }}>
+            <DollarSign size={20} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ color: '#f59e0b', fontSize: '1.05rem', fontWeight: 800, margin: '0 0 0.35rem' }}>
+              Your payment settings are incomplete
+            </h3>
+            <p style={{ color: '#fbbf24', fontSize: '0.85rem', margin: '0 0 1rem', lineHeight: 1.5 }}>
+              Attendees cannot book your events until you add your UPI ID and QR code. 
+              Please complete your payment profile to start receiving bookings.
+            </p>
+            <button 
+              className="btn-accent"
+              style={{ background: '#f59e0b', color: '#1a2235', fontWeight: 700, padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+              onClick={() => navigate('/profile')}
+            >
+              Set Up Payments Now
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Wallet Card */}
       <div className="wallet-card">
         <div className="wallet-label">Your Wallet Balance</div>

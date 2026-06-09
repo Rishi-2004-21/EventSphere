@@ -14,6 +14,7 @@ import WalletPage from './pages/WalletPage'
 import EventDetail from './pages/EventDetail'
 import BookingsPage from './pages/BookingsPage'
 import TicketScanner from './pages/TicketScanner'
+import Profile from './pages/Profile'
 
 function ProtectedRoute({ children }) {
   const { currentUser } = useAuth()
@@ -49,6 +50,7 @@ function AppInner() {
           <Route path="/wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
           <Route path="/bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />
           <Route path="/scanner" element={<ProtectedRoute><TicketScanner /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/events/:id" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
           <Route path="/" element={<Navigate to={isLoggedIn ? '/dashboard' : '/login'} replace />} />
           <Route path="*" element={<Navigate to={isLoggedIn ? '/dashboard' : '/login'} replace />} />

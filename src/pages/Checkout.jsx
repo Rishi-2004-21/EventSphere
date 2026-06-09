@@ -13,9 +13,9 @@ import { formatCurrency } from '../utils/formatCurrency'
 
 // UPI payment config
 // TODO: Replace with Razorpay modal when VITE_RAZORPAY_KEY_ID is configured
-const UPI_QR_URL = import.meta.env.VITE_UPI_QR_URL ||
-  'https://foexoyakzskviskmkqqn.supabase.co/storage/v1/object/public/assets/upi%20id.jpeg'
-const UPI_ID = import.meta.env.VITE_UPI_ID || '8125432020@pthdfc'
+// Fallbacks if organizer hasn't set them up (should be blocked by UI anyway)
+const FALLBACK_UPI_QR_URL = import.meta.env.VITE_UPI_QR_URL || 'https://foexoyakzskviskmkqqn.supabase.co/storage/v1/object/public/assets/upi%20id.jpeg'
+const FALLBACK_UPI_ID = import.meta.env.VITE_UPI_ID || '8125432020@pthdfc'
 
 
 /* ══════════════════════════════════════════════════════════════
@@ -245,6 +245,7 @@ export default function Checkout() {
   const navigate = useNavigate()
   const { currentUser } = useAuth()
   const [event, setEvent] = useState(null)
+  const [organizer, setOrganizer] = useState(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
   const [successData, setSuccessData] = useState(null)
@@ -257,12 +258,27 @@ export default function Checkout() {
   const [qrImageError, setQrImageError] = useState(false)
 
   useEffect(() => {
-    supabase.from('events').select('*').eq('id', id).single()
-      .then(({ data }) => { setEvent(data); setLoading(false) })
+    async function fetchCheckoutData() {
+      const { data: eventData } = await supabase.from('events').select('*').eq('id', id).single()
+      if (eventData) {
+        setEvent(eventData)
+        if (eventData.organizer_id) {
+          const { data: orgData } = await supabase
+            .from('users')
+            .select('id, name, upi_id, upi_qr_url')
+            .eq('id', eventData.organizer_id)
+            .single()
+          if (orgData) setOrganizer(orgData)
+        }
+      }
+      setLoading(false)
+    }
+    fetchCheckoutData()
   }, [id])
 
   function handleCopyUpiId() {
-    navigator.clipboard.writeText(UPI_ID).then(() => {
+    const upiIdToCopy = organizer?.upi_id || FALLBACK_UPI_ID
+    navigator.clipboard.writeText(upiIdToCopy).then(() => {
       setUpiCopied(true)
       toast.success('UPI ID copied to clipboard!')
       setTimeout(() => setUpiCopied(false), 2500)
@@ -405,8 +421,22 @@ export default function Checkout() {
               /* ── Paid Event — UPI QR Flow ──
                  TODO: Replace with Razorpay modal when VITE_RAZORPAY_KEY_ID is configured */
               <div>
-
-                {/* Blue info box */}
+                
+                {(!organizer?.upi_id || !organizer?.upi_qr_url) ? (
+                  <div style={{
+                    background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)',
+                    borderRadius: '0.75rem', padding: '1.25rem', marginBottom: '1.25rem',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚠️</div>
+                    <div style={{ fontWeight: 700, color: '#f59e0b', marginBottom: '0.5rem' }}>Payment Not Configured</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      This organizer has not set up UPI payment yet. Please contact the organizer directly or check back later.
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Blue info box */}
                 <div style={{
                   display: 'flex', gap: '0.6rem', alignItems: 'flex-start',
                   background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)',
@@ -420,10 +450,13 @@ export default function Checkout() {
 
                 {/* ── UPI Deep Link QR (auto-fills amount in GPay/PhonePe/Paytm) ── */}
                 <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
+                    Pay directly to {organizer?.name}
+                  </div>
                   {/* Primary: Dynamic QR with amount pre-filled */}
                   <div style={{ display: 'inline-block', background: 'white', padding: 14, borderRadius: 12, boxShadow: '0 4px 24px rgba(0,0,0,0.35)' }}>
                     <QRCode
-                      value={`upi://pay?pa=${UPI_ID}&pn=EventSphere&am=${price.toFixed(2)}&cu=INR&tn=EventSphere+Booking`}
+                      value={`upi://pay?pa=${organizer?.upi_id}&pn=${encodeURIComponent(organizer?.name || 'Organizer')}&am=${price.toFixed(2)}&cu=INR&tn=EventSphere+Booking`}
                       size={220}
                       level="H"
                       fgColor="#0a0f1e"
@@ -437,7 +470,7 @@ export default function Checkout() {
                   {/* Tap to save: link to static Supabase QR image as fallback */}
                   <div style={{ marginTop: '0.35rem' }}>
                     <a
-                      href={UPI_QR_URL}
+                      href={organizer?.upi_qr_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: 'none' }}
@@ -453,7 +486,7 @@ export default function Checkout() {
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>UPI ID</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', flex: 1 }}>
-                      {UPI_ID}
+                      {organizer?.upi_id}
                     </span>
                     <button
                       onClick={handleCopyUpiId}
@@ -540,6 +573,8 @@ export default function Checkout() {
                 <div className="lock-note" style={{ marginTop: '0.75rem' }}>
                   <span>🔒 Your ticket is generated immediately after confirming payment</span>
                 </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -574,7 +609,7 @@ export default function Checkout() {
                 Please confirm that you have paid{' '}
                 <strong style={{ color: 'var(--purple)' }}>{formatCurrency(price)}</strong>{' '}
                 to UPI ID{' '}
-                <strong style={{ fontFamily: 'monospace' }}>{UPI_ID}</strong>.
+                <strong style={{ fontFamily: 'monospace' }}>{organizer?.upi_id}</strong>.
               </p>
             </div>
 

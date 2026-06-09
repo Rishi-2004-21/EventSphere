@@ -30,6 +30,7 @@ export default function EventModeration() {
   // Modals state
   const [changesModalOpen, setChangesModalOpen] = useState(false)
   const [rejectModalOpen, setRejectModalOpen] = useState(false)
+  const [approveWarningModalOpen, setApproveWarningModalOpen] = useState(false)
   const [activeEvent, setActiveEvent] = useState(null)
   const [adminNote, setAdminNote] = useState('')
 
@@ -49,7 +50,27 @@ export default function EventModeration() {
     setLoading(false)
   }
 
-  async function handleApprove(event) {
+  async function initiateApprove(event) {
+    if (!event.organizer_id) {
+      executeApprove(event)
+      return
+    }
+
+    const { data: org } = await supabase
+      .from('users')
+      .select('upi_qr_url')
+      .eq('id', event.organizer_id)
+      .single()
+
+    if (!org?.upi_qr_url) {
+      setActiveEvent(event)
+      setApproveWarningModalOpen(true)
+    } else {
+      executeApprove(event)
+    }
+  }
+
+  async function executeApprove(event) {
     const { error } = await supabase
       .from('events')
       .update({ status: 'approved' })
@@ -59,6 +80,8 @@ export default function EventModeration() {
       toast.error('Failed to approve event')
     } else {
       toast.success('Event approved')
+      setApproveWarningModalOpen(false)
+      setActiveEvent(null)
       fetchEvents()
     }
   }
@@ -165,7 +188,7 @@ export default function EventModeration() {
                 <button 
                   className="btn-approve" 
                   style={{ flex: 1, justifyContent: 'center' }}
-                  onClick={() => handleApprove(evt)}
+                  onClick={() => initiateApprove(evt)}
                 >
                   <Check size={16} /> Approve
                 </button>
@@ -221,6 +244,22 @@ export default function EventModeration() {
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
               <button className="btn-ghost" onClick={() => setRejectModalOpen(false)}>Cancel</button>
               <button className="btn-accent" style={{ background: 'var(--red)' }} onClick={handleReject}>Reject</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approve Warning Modal (Missing UPI) */}
+      {approveWarningModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div className="card" style={{ width: '400px', maxWidth: '90%' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem', color: '#f59e0b' }}>Missing Payment Details</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+              This organizer has not set up payment details (UPI QR code). Approving this event means attendees cannot complete payment. Do you want to approve anyway?
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button className="btn-ghost" onClick={() => setApproveWarningModalOpen(false)}>Cancel</button>
+              <button className="btn-accent" style={{ background: '#f59e0b', color: '#1a2235' }} onClick={() => executeApprove(activeEvent)}>Approve Anyway</button>
             </div>
           </div>
         </div>
