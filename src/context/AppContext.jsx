@@ -12,6 +12,7 @@ import {
 const AppContext = createContext(null);
 
 const initialState = {
+  theme: 'dark', // Added for Dark/Light theme toggle
   auth: {
     currentUser: null,
     isLoggedIn: false,
@@ -26,6 +27,16 @@ const initialState = {
 
 function appReducer(state, action) {
   switch (action.type) {
+    // ── THEME ─────────────────────────────────────────────────────────────────
+    case 'TOGGLE_THEME': {
+      const newTheme = state.theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('eventsphere_theme', newTheme);
+      return { ...state, theme: newTheme };
+    }
+    case 'SET_THEME': {
+      return { ...state, theme: action.payload };
+    }
+
     // ── AUTH ──────────────────────────────────────────────────────────────────
     case 'LOGIN': {
       return {
@@ -265,6 +276,13 @@ export function AppProvider({ children }) {
         localStorage.removeItem('eventsphere_user');
       }
     }
+    
+    // Initialize theme from localStorage
+    const savedTheme = localStorage.getItem('eventsphere_theme');
+    if (savedTheme) {
+      dispatch({ type: 'SET_THEME', payload: savedTheme });
+    }
+
     setAuthLoading(false);
   }, []);
 

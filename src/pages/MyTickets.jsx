@@ -4,7 +4,7 @@ import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
 import { Ticket, CalendarCheck, Clock, ShieldCheck, RefreshCw } from 'lucide-react'
 import { isAfter, parseISO } from 'date-fns'
-import TicketGenerator from '../components/TicketGenerator'
+import CompactTicketCard from '../components/CompactTicketCard'
 
 export default function MyTickets() {
   const { currentUser } = useAuth()
@@ -83,9 +83,14 @@ export default function MyTickets() {
       <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Ticket size={24} style={{ color: 'var(--purple)' }} /> My Tickets
+            My Tickets <Ticket size={24} style={{ color: 'var(--purple)' }} /> 
+            <span style={{ 
+              background: 'var(--purple)', color: 'white', fontSize: '14px', 
+              padding: '2px 8px', borderRadius: '12px', marginLeft: '4px', verticalAlign: 'middle'
+            }}>
+              {tickets.length}
+            </span>
           </h1>
-          <p className="page-subtitle">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''} booked</p>
         </div>
 
         {/* Manual refresh button */}
@@ -106,44 +111,77 @@ export default function MyTickets() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="ticket-filter-tabs">
-        <button className={`ticket-filter-tab ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
-          All ({tickets.length})
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '4px' }}>
+        <button 
+          onClick={() => setFilter('upcoming')}
+          style={{ 
+            padding: '6px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+            background: filter === 'upcoming' ? 'var(--purple)' : 'transparent',
+            color: filter === 'upcoming' ? 'white' : 'var(--text-secondary)',
+            border: filter === 'upcoming' ? 'none' : '1px solid var(--border)',
+            transition: 'all 0.2s'
+          }}
+        >
+          Upcoming
         </button>
-        <button className={`ticket-filter-tab ${filter === 'upcoming' ? 'active' : ''}`} onClick={() => setFilter('upcoming')}>
-          <CalendarCheck size={14} /> Upcoming
+        <button 
+          onClick={() => setFilter('past')}
+          style={{ 
+            padding: '6px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+            background: filter === 'past' ? 'var(--purple)' : 'transparent',
+            color: filter === 'past' ? 'white' : 'var(--text-secondary)',
+            border: filter === 'past' ? 'none' : '1px solid var(--border)',
+            transition: 'all 0.2s'
+          }}
+        >
+          Past
         </button>
-        <button className={`ticket-filter-tab ${filter === 'past' ? 'active' : ''}`} onClick={() => setFilter('past')}>
-          <Clock size={14} /> Past
+        <button 
+          onClick={() => setFilter('all')}
+          style={{ 
+            padding: '6px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+            background: filter === 'all' ? 'var(--purple)' : 'transparent',
+            color: filter === 'all' ? 'white' : 'var(--text-secondary)',
+            border: filter === 'all' ? 'none' : '1px solid var(--border)',
+            transition: 'all 0.2s'
+          }}
+        >
+          All
         </button>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">🎟️</div>
-          <div className="empty-title">
-            {filter === 'upcoming' ? 'No upcoming events' : filter === 'past' ? 'No past events' : 'No tickets yet'}
+        <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+          <Ticket size={48} style={{ color: 'var(--text-muted)', margin: '0 auto 16px', opacity: 0.5 }} />
+          <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
+            No tickets found
           </div>
-          <div className="empty-sub">
+          <div style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
             {filter === 'all' ? 'Start exploring events and book your first ticket!' : 'Switch to a different filter to see your tickets.'}
           </div>
+          <button 
+            className="btn-purple" 
+            onClick={() => window.location.href = '/discover'}
+          >
+            Discover Events
+          </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {filtered.map((ticket) => (
             <div key={ticket.id}>
               {consentedEventIds.has(ticket.event_id) && (
                 <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-                  background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.35)',
-                  borderRadius: '999px', padding: '0.25rem 0.75rem',
-                  fontSize: '0.75rem', color: '#10b981', fontWeight: 600,
-                  marginBottom: '0.6rem',
+                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                  background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)',
+                  borderRadius: '12px', padding: '2px 8px',
+                  fontSize: '11px', color: 'var(--green)', fontWeight: 600,
+                  marginBottom: '8px',
                 }}>
-                  <ShieldCheck size={13} /> Terms Agreed
+                  <ShieldCheck size={12} /> Terms Agreed
                 </div>
               )}
-              <TicketGenerator booking={ticket} event={ticket.event} />
+              <CompactTicketCard booking={ticket} event={ticket.event} />
             </div>
           ))}
         </div>

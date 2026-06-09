@@ -1,4 +1,4 @@
-﻿/* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    EventSphere Attendee — Design System
    Dark mode, purple accents, glassmorphism, micro-animations
 ═══════════════════════════════════════════════════════════════ */
@@ -34,6 +34,28 @@
   --transition: all 0.2s ease;
 }
 
+:root.light-theme {
+  --bg-dark: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-2: #ffffff;
+  --border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --purple: #7c3aed;
+  --purple-light: #8b5cf6;
+  --purple-dim: rgba(124,58,237,0.15);
+  --purple-glow: rgba(124,58,237,0.3);
+  --green: #059669;
+  --green-dim: rgba(5,150,105,0.15);
+  --red: #dc2626;
+  --red-dim: rgba(220,38,38,0.15);
+  --amber: #d97706;
+  --amber-dim: rgba(217,119,6,0.15);
+  --shadow-card: 0 4px 20px rgba(0,0,0,0.06);
+  --shadow-glow: 0 0 40px rgba(124,58,237,0.12);
+}
+
 /* ── Reset & Base ──────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html {
@@ -50,6 +72,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;          /* FIX: prevent horizontal scroll on mobile */
   width: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 a { text-decoration: none; color: inherit; }
 button { font-family: inherit; }
@@ -84,12 +107,15 @@ input, select, textarea { font-family: inherit; }
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(7,13,26,0.92);
+  background: var(--bg-card);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   height: 64px;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
+:root.dark-theme .navbar { background: rgba(7,13,26,0.92); }
+:root.light-theme .navbar { background: rgba(255,255,255,0.92); }
 
 .navbar-inner {
   max-width: 1200px;
@@ -146,7 +172,7 @@ input, select, textarea { font-family: inherit; }
   left: 0;
   right: 0;
   z-index: 99;
-  background: rgba(7,13,26,0.98);
+  background: var(--bg-card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
@@ -405,13 +431,13 @@ input, select, textarea { font-family: inherit; }
 
 .form-input {
   width: 100%;
-  background: #111827;
-  border: 1px solid #2a3a55;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px 16px;
   color: var(--text-primary);
   font-size: 14px;
-  transition: var(--transition);
+  transition: var(--transition), background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   outline: none;
 }
 
@@ -562,6 +588,7 @@ input, select, textarea { font-family: inherit; }
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* ── Badges ────────────────────────────────────────────────── */

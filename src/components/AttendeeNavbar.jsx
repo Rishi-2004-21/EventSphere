@@ -1,12 +1,15 @@
 import { useNavigate, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Bell, LogOut, X, Menu, User } from 'lucide-react'
+import { useApp } from '../context/AppContext'
+import { Bell, LogOut, X, Menu, User, Sun, Moon } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
 import { formatDistanceToNow } from 'date-fns'
 
 export default function AttendeeNavbar() {
   const { currentUser, logout } = useAuth()
+  const { state, dispatch } = useApp()
+  const theme = state?.theme || 'dark'
   const navigate = useNavigate()
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifications, setNotifications] = useState([])
@@ -91,6 +94,21 @@ export default function AttendeeNavbar() {
           </div>
 
           <div className="navbar-right">
+            {/* Theme Toggle */}
+            <button 
+              onClick={() => dispatch({ type: 'TOGGLE_THEME' })}
+              style={{
+                width: 36, height: 36, borderRadius: '50%',
+                background: 'transparent', border: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', transition: 'all 0.3s ease',
+                color: theme === 'dark' ? 'var(--amber)' : 'var(--purple)'
+              }}
+              title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
             {/* Notification Bell */}
             <div ref={notifRef} style={{ position: 'relative' }}>
               <button id="notif-bell-btn" className="notif-btn" title="Notifications"
@@ -99,10 +117,10 @@ export default function AttendeeNavbar() {
                 {unreadCount > 0 && (
                   <span style={{
                     position: 'absolute', top: '-6px', right: '-6px',
-                    minWidth: '18px', height: '18px', background: '#ef4444',
+                    minWidth: '18px', height: '18px', background: 'var(--red)',
                     borderRadius: '9px', display: 'flex', alignItems: 'center',
                     justifyContent: 'center', fontSize: '10px', fontWeight: 700,
-                    color: 'white', padding: '0 3px', border: '2px solid #070d1a',
+                    color: 'white', padding: '0 3px', border: '2px solid var(--bg-card)',
                     lineHeight: 1, pointerEvents: 'none',
                   }}>
                     {unreadCount > 9 ? '9+' : unreadCount}

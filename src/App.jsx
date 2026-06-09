@@ -62,6 +62,12 @@ function AppInner() {
     testConnection()
   }, [])
 
+  // Apply Theme to root element
+  useEffect(() => {
+    const theme = state?.theme || 'dark'
+    document.documentElement.className = theme === 'dark' ? 'dark-theme' : 'light-theme'
+  }, [state?.theme])
+
   if (authLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#0f172a' }}>

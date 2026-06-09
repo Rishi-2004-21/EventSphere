@@ -364,7 +364,7 @@ export default function Checkout() {
                 <>
                   <div className="payment-row">
                     <span className="payment-row-label">Ticket Price</span>
-                    <span className="payment-row-value" style={{ color: '#10b981', fontWeight: 700 }}>Free</span>
+                    <span className="payment-row-value" style={{ color: 'var(--green)', fontWeight: 700 }}>Free</span>
                   </div>
                   <div className="payment-row" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
                     <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Total</span>
@@ -424,12 +424,12 @@ export default function Checkout() {
                 
                 {(!organizer?.upi_id || !organizer?.upi_qr_url) ? (
                   <div style={{
-                    background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)',
+                    background: 'var(--amber-dim)', border: '1px solid rgba(245,158,11,0.3)',
                     borderRadius: '0.75rem', padding: '1.25rem', marginBottom: '1.25rem',
                     textAlign: 'center'
                   }}>
                     <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚠️</div>
-                    <div style={{ fontWeight: 700, color: '#f59e0b', marginBottom: '0.5rem' }}>Payment Not Configured</div>
+                    <div style={{ fontWeight: 700, color: 'var(--amber)', marginBottom: '0.5rem' }}>Payment Not Configured</div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                       This organizer has not set up UPI payment yet. Please contact the organizer directly or check back later.
                     </div>
@@ -464,7 +464,7 @@ export default function Checkout() {
                       style={{ display: 'block' }}
                     />
                   </div>
-                  <div style={{ marginTop: '0.6rem', fontSize: '0.78rem', color: '#10b981', fontWeight: 600 }}>
+                  <div style={{ marginTop: '0.6rem', fontSize: '0.78rem', color: 'var(--green)', fontWeight: 600 }}>
                     ✅ Amount ₹{price.toFixed(2)} is pre-filled — just scan and pay
                   </div>
                   {/* Tap to save: link to static Supabase QR image as fallback */}
@@ -510,7 +510,7 @@ export default function Checkout() {
                   <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--purple)', letterSpacing: '-0.5px' }}>
                     {formatCurrency(price)}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.2rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--red)', marginTop: '0.2rem' }}>
                     ⚠ Please pay the exact amount shown above
                   </div>
                 </div>
@@ -520,7 +520,7 @@ export default function Checkout() {
                 {/* Transaction ID input */}
                 <div style={{ marginBottom: '1rem' }}>
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
-                    Enter Transaction ID <span style={{ color: '#ef4444' }}>*</span>
+                    Enter Transaction ID <span style={{ color: 'var(--red)' }}>*</span>
                   </label>
                   <div style={{ position: 'relative' }}>
                     <input
@@ -541,7 +541,7 @@ export default function Checkout() {
                       onBlur={(e) => { e.target.style.borderColor = transactionId && !txnValid ? '#ef4444' : 'var(--border)' }}
                     />
                     {txnValid && (
-                      <Check size={16} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: '#10b981' }} />
+                      <Check size={16} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--green)' }} />
                     )}
                   </div>
                   <p style={{ fontSize: '0.77rem', color: 'var(--text-muted)', marginTop: '0.4rem', lineHeight: 1.5 }}>

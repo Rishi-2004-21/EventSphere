@@ -65,7 +65,7 @@ export default function TicketGenerator({ booking, event }) {
     if (!ticketRef.current) return
     try {
       const canvas = await html2canvas(ticketRef.current, {
-        backgroundColor: '#0a0f1e',
+        backgroundColor: null,
         scale: 2,
         useCORS: true,
         logging: false,
@@ -194,7 +194,7 @@ export default function TicketGenerator({ booking, event }) {
                 level="H"
                 style={{ height: 'auto', width: '100%', display: 'block' }}
                 viewBox="0 0 256 256"
-                fgColor="#0a0f1e"
+                fgColor="var(--text-primary)"
               />
             </div>
             <div className="ticket-qr-label">SCAN AT ENTRY</div>

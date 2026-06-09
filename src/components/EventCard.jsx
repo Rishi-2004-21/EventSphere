@@ -79,10 +79,10 @@ export default function EventCard({ event, showActions = true }) {
                 width: `${capacityPct}%`,
                 background:
                   capacityPct > 80
-                    ? 'var(--color-danger)'
+                    ? 'var(--red)'
                     : capacityPct > 50
-                    ? 'var(--color-warning)'
-                    : 'var(--gradient-primary)',
+                    ? 'var(--amber)'
+                    : 'linear-gradient(135deg, var(--purple), var(--purple-light))',
               }}
             />
           </div>
