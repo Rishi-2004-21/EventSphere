@@ -39,7 +39,16 @@ export default function UserManagement() {
     if (error) {
       toast.error('Verification failed')
     } else {
-      toast.success('Organizer verified')
+      // Insert approval notification for the organizer
+      await supabase.from('notifications').insert([{
+        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
+        user_id: id,
+        message: 'Your organizer account has been approved! You can now log in and start creating events.',
+        is_read: false,
+        created_at: new Date().toISOString(),
+      }]).catch(() => {})
+
+      toast.success('Organizer verified and notified ✅')
       fetchUsers()
     }
     setActioningId(null)
@@ -51,7 +60,7 @@ export default function UserManagement() {
     if (filter === 'suspended' && !u.is_suspended) return false
     if (filter === 'unverified' && (u.role !== 'organizer' || u.is_verified)) return false
     
-    if (search && !u.name.toLowerCase().includes(search.toLowerCase()) && !u.email.toLowerCase().includes(search.toLowerCase())) return false
+    if (search && !(u.name || '').toLowerCase().includes(search.toLowerCase()) && !(u.email || '').toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
 
@@ -108,8 +117,9 @@ export default function UserManagement() {
                     <td><span className={`badge role-${u.role}`}>{u.role.toUpperCase()}</span></td>
                     <td>
                       {u.role === 'organizer' ? (
-                        u.is_verified ? <span className="text-green flex items-center gap-sm" style={{ fontSize: '0.8rem', fontWeight: 600 }}><ShieldCheck size={14}/> Verified</span>
-                                      : <span className="text-amber flex items-center gap-sm" style={{ fontSize: '0.8rem', fontWeight: 600 }}><ShieldAlert size={14}/> Pending</span>
+                        u.is_verified
+                          ? <span className="text-green flex items-center gap-sm" style={{ fontSize: '0.8rem', fontWeight: 600 }}><ShieldCheck size={14}/> Verified</span>
+                          : <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 700, color: '#f59e0b', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: '999px', padding: '0.2rem 0.65rem' }}><ShieldAlert size={13}/> Pending Approval</span>
                       ) : (
                         <span style={{ color: 'var(--text-muted)' }}>-</span>
                       )}
@@ -122,8 +132,13 @@ export default function UserManagement() {
                     <td>
                       <div className="action-group">
                         {u.role === 'organizer' && !u.is_verified && !u.is_suspended && (
-                          <button className="btn-approve" onClick={() => verifyOrganizer(u.id)} disabled={actioningId === u.id}>
-                            <Check size={14}/> Verify
+                          <button
+                            className="btn-approve"
+                            onClick={() => verifyOrganizer(u.id)}
+                            disabled={actioningId === u.id}
+                            style={{ fontWeight: 700, background: 'rgba(245,158,11,0.15)', borderColor: '#f59e0b', color: '#f59e0b' }}
+                          >
+                            <Check size={14}/> Verify Now
                           </button>
                         )}
                         {u.role !== 'admin' && (

@@ -17,11 +17,14 @@ export default function OrganizerLogin() {
     setError('')
 
     try {
-      const { data, error: dbError } = await supabase
+      // Find the organizer account specifically (same email may exist for multiple roles)
+      const { data: rows, error: dbError } = await supabase
         .from('users')
         .select('*')
         .eq('email', form.email.trim())
-        .maybeSingle()
+        .eq('role', 'organizer')
+
+      const data = rows && rows.length > 0 ? rows[0] : null
 
       if (dbError !== null) {
         console.error(dbError)
@@ -31,7 +34,7 @@ export default function OrganizerLogin() {
       }
 
       if (data === null) {
-        setError('invalid email or password')
+        setError('no organizer account found for this email. please register or check your credentials.')
         setLoading(false)
         return
       }
@@ -44,6 +47,12 @@ export default function OrganizerLogin() {
 
       if (data.role !== 'organizer') {
         setError('this portal is for organizers only')
+        setLoading(false)
+        return
+      }
+
+      if (data.is_verified === false) {
+        setError('your organizer account is pending admin approval. you will receive access once our team verifies your account. please check back later or contact support.')
         setLoading(false)
         return
       }

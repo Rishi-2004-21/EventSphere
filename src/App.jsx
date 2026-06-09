@@ -6,6 +6,7 @@ import { AppProvider, useApp } from './context/AppContext'
 import { AuthProvider } from './context/AuthContext'
 import ChatBot from './components/ChatBot'
 import LoadingSpinner from './components/LoadingSpinner'
+import BecomeOrganizerPopup from './components/BecomeOrganizerPopup'
 
 // Route Guards
 import AttendeeRoute from './routes/AttendeeRoute'
@@ -125,6 +126,7 @@ function AppInner() {
         </Routes>
       </main>
       <ChatBot />
+      <BecomeOrganizerPopup />
       <Toaster
         position="top-right"
         toastOptions={{

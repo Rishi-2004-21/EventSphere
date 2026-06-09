@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { nanoid } from 'nanoid'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
-import { Calendar, MapPin, Users, Heart, Ticket, CreditCard, ArrowLeft, ExternalLink, Map } from 'lucide-react'
+import { Calendar, MapPin, Heart, Ticket, CreditCard, ArrowLeft, ExternalLink, Map } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatCurrency, calculatePaymentSplit } from '../utils/formatCurrency'
 
@@ -155,7 +155,7 @@ export default function EventDetail() {
     </div>
   )
 
-  const remaining = (event.capacity || 0) - (event.tickets_sold || 0)
+
 
   return (
     <div className="page-wrapper">
@@ -187,7 +187,6 @@ export default function EventDetail() {
           <div className="info-chips">
             <span className="info-chip"><Calendar size={13} />{event.date}</span>
             <span className="info-chip"><MapPin size={13} />{event.venue}, {event.city}</span>
-            <span className="info-chip"><Users size={13} />{remaining} spots left</span>
           </div>
 
           <PaymentBreakdown price={event.price} />
@@ -232,7 +231,6 @@ export default function EventDetail() {
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
               <div>📍 {event.venue}</div>
               <div>{event.city}</div>
-              <div style={{ marginTop: '0.5rem' }}>🎟 {event.capacity} total capacity</div>
             </div>
 
             <div className="divider" />
