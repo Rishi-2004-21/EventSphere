@@ -126,7 +126,6 @@ export default function LandingPage() {
             {[
               { icon: <Search size={28} />, step: '01', title: 'Browse Events', desc: 'Discover AI-recommended events curated just for you based on your interests and location.' },
               { icon: <Ticket size={28} />, step: '02', title: 'Book Instantly', desc: 'Secure your spot in seconds. Your QR-code ticket is generated immediately after payment.' },
-              { icon: <CreditCard size={28} />, step: '03', title: 'Organizer Gets Paid', desc: '90% of every ticket sale goes directly to the organizer\'s wallet. Instantly. No delays.' },
             ].map((item) => (
               <div key={item.step} className="hiw-card">
                 <div className="hiw-icon">{item.icon}</div>
@@ -147,11 +146,6 @@ export default function LandingPage() {
                 )}
               </div>
             ))}
-          </div>
-          <div className="hiw-cta">
-            <Link to="/register" className="btn-primary btn-lg">
-              Get Started Free <ArrowRight size={18} />
-            </Link>
           </div>
         </div>
       </section>
