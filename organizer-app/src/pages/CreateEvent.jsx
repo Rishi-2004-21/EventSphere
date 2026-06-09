@@ -221,7 +221,7 @@ export default function CreateEvent() {
       organizer_id: currentUser.id,
       organizer_name: currentUser.name,
       date: form.date,
-      time: form.time || null,
+      event_time: form.time || null,
       venue: form.venue,
       city: form.city,
       capacity: Number(form.capacity) || 100,
@@ -235,7 +235,6 @@ export default function CreateEvent() {
       ai_confidence: aiCategories[0]?.confidence || 0,
       trending: 'Steady',
       booking_count: 0,
-      created_at: new Date().toISOString(),
       terms_and_conditions: termsText,
       has_custom_terms: !form.useDefaultTerms && form.customTerms.trim().length > 0,
     }

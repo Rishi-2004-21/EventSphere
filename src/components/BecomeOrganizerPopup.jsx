@@ -1,27 +1,38 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { X, Sparkles, ExternalLink, Info } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
-const ORGANIZER_PORTAL_URL = import.meta.env.VITE_ORGANIZER_PORTAL_URL || 'http://localhost:5174'
+const ORGANIZER_PORTAL_URL = import.meta.env.VITE_ORGANIZER_PORTAL_URL || 'https://event-sphere-2q6v.vercel.app/login'
 
 export default function BecomeOrganizerPopup() {
-  const { currentUser } = useAuth()
+  const { currentUser, isLoggedIn } = useAuth()
   const [visible, setVisible] = useState(false)
   const [showInfo, setShowInfo] = useState(false)
+  const autoDismissRef = useRef(null)
 
   useEffect(() => {
-    // Only show if logged in as attendee and not already dismissed this session
-    if (!currentUser || currentUser.role !== 'attendee') return
+    // Only show for logged-in attendees who haven't dismissed
+    if (!isLoggedIn || !currentUser || currentUser.role !== 'attendee') {
+      setVisible(false)
+      return
+    }
     if (sessionStorage.getItem('organizer_popup_dismissed') === 'true') return
 
-    const timer = setTimeout(() => {
-      setVisible(true)
-    }, 30000) // 30 seconds
+    // Show immediately on login
+    setVisible(true)
 
-    return () => clearTimeout(timer)
-  }, [currentUser])
+    // Auto-dismiss after 10 seconds if user ignores it
+    autoDismissRef.current = setTimeout(() => {
+      setVisible(false)
+    }, 10000)
+
+    return () => {
+      if (autoDismissRef.current) clearTimeout(autoDismissRef.current)
+    }
+  }, [isLoggedIn, currentUser?.id]) // re-run when login state changes
 
   function dismiss() {
+    if (autoDismissRef.current) clearTimeout(autoDismissRef.current)
     setVisible(false)
     sessionStorage.setItem('organizer_popup_dismissed', 'true')
   }

@@ -17,11 +17,14 @@ export default function Login() {
     setError('')
 
     try {
-      const { data, error: dbError } = await supabase
+      // Filter by both email AND role so dual-account users (attendee + organizer same email) work correctly
+      const { data: rows, error: dbError } = await supabase
         .from('users')
         .select('*')
         .eq('email', form.email.trim())
-        .maybeSingle()
+        .eq('role', 'attendee')
+
+      const data = rows && rows.length > 0 ? rows[0] : null
 
       if (dbError !== null) {
         console.error(dbError)
