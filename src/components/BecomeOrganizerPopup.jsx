@@ -1,27 +1,33 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, Sparkles, ExternalLink, Info } from 'lucide-react'
-import { useAuth } from '../context/AuthContext'
+import { useApp } from '../context/AppContext'
 
 const ORGANIZER_PORTAL_URL = import.meta.env.VITE_ORGANIZER_PORTAL_URL || 'https://event-sphere-2q6v.vercel.app/login'
 
 export default function BecomeOrganizerPopup() {
-  const { currentUser, isLoggedIn } = useAuth()
+  // Use AppContext (same source of truth as the rest of the app) instead of AuthContext
+  const { state } = useApp()
+  const currentUser = state?.auth?.currentUser
+
   const [visible, setVisible] = useState(false)
   const [showInfo, setShowInfo] = useState(false)
   const autoDismissRef = useRef(null)
+  const hasShownRef = useRef(false) // prevent showing twice in same mount cycle
 
   useEffect(() => {
-    // Only show for logged-in attendees who haven't dismissed
-    if (!isLoggedIn || !currentUser || currentUser.role !== 'attendee') {
-      setVisible(false)
-      return
-    }
+    // Only for attendees
+    if (!currentUser || currentUser.role !== 'attendee') return
+
+    // Don't show if already dismissed this session
     if (sessionStorage.getItem('organizer_popup_dismissed') === 'true') return
 
-    // Show immediately on login
+    // Don't show again if already shown this component lifecycle
+    if (hasShownRef.current) return
+
+    hasShownRef.current = true
     setVisible(true)
 
-    // Auto-dismiss after 10 seconds if user ignores it
+    // Auto-dismiss after 10 seconds
     autoDismissRef.current = setTimeout(() => {
       setVisible(false)
     }, 10000)
@@ -29,7 +35,7 @@ export default function BecomeOrganizerPopup() {
     return () => {
       if (autoDismissRef.current) clearTimeout(autoDismissRef.current)
     }
-  }, [isLoggedIn, currentUser?.id]) // re-run when login state changes
+  }, [currentUser?.id, currentUser?.role]) // trigger when user logs in
 
   function dismiss() {
     if (autoDismissRef.current) clearTimeout(autoDismissRef.current)
