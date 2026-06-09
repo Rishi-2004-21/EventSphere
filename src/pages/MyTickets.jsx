@@ -119,7 +119,7 @@ export default function MyTickets() {
       {filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--card-background)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
           <Ticket size={48} style={{ color: 'gray', margin: '0 auto 16px', opacity: 0.5 }} />
-          <div style={{ fontSize: '18px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>
+          <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
             No tickets found
           </div>
           <button 
