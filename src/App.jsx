@@ -62,10 +62,10 @@ function AppInner() {
     testConnection()
   }, [])
 
-  // Apply Theme to root element
+  // Apply Theme to body
   useEffect(() => {
     const theme = state?.theme || 'dark'
-    document.documentElement.className = theme === 'dark' ? 'dark-theme' : 'light-theme'
+    document.body.setAttribute('data-theme', theme)
   }, [state?.theme])
 
   if (authLoading) {

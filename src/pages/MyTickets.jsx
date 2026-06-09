@@ -1,19 +1,21 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
-import { Ticket, CalendarCheck, Clock, ShieldCheck, RefreshCw } from 'lucide-react'
+import { Ticket, RefreshCw } from 'lucide-react'
 import { isAfter, parseISO } from 'date-fns'
 import CompactTicketCard from '../components/CompactTicketCard'
+import ExpandedTicketModal from '../components/ExpandedTicketModal'
 
 export default function MyTickets() {
   const { currentUser } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [filter, setFilter] = useState('all')
-  const [consentedEventIds, setConsentedEventIds] = useState(new Set())
+  const [activeFilter, setActiveFilter] = useState('All')
+  const [expandedBooking, setExpandedBooking] = useState(null)
 
   const fetchTickets = useCallback(async (silent = false) => {
     if (!currentUser) return
@@ -32,7 +34,7 @@ export default function MyTickets() {
       bookings.map(async (b) => {
         const { data: evt } = await supabase
           .from('events')
-          .select('title, date, venue, city, category, organizer_name, description, organizer_id, time')
+          .select('title, date, venue, city, category, organizer_name, description, organizer_id, time, banner_url')
           .eq('id', b.event_id)
           .single()
         return { ...b, event: evt }
@@ -44,35 +46,21 @@ export default function MyTickets() {
     setRefreshing(false)
   }, [currentUser])
 
-  // Refetch on every navigation to this page (location.key is unique per navigate() call)
   useEffect(() => {
     fetchTickets(false)
   }, [fetchTickets, location.key])
 
-  // Fetch consent records
-  useEffect(() => {
-    async function fetchConsents() {
-      if (!currentUser) return
-      const { data } = await supabase
-        .from('consent_records')
-        .select('event_id')
-        .eq('attendee_id', currentUser.id)
-      if (data) setConsentedEventIds(new Set(data.map(r => r.event_id)))
-    }
-    fetchConsents()
-  }, [currentUser])
-
   const now = new Date()
   const filtered = tickets.filter(t => {
     const dateStr = t.event?.date || t.event_date
-    if (!dateStr) return filter === 'all'
+    if (!dateStr) return activeFilter === 'All'
     try {
       const eventDate = parseISO(dateStr)
-      if (filter === 'upcoming') return isAfter(eventDate, now)
-      if (filter === 'past') return !isAfter(eventDate, now)
+      if (activeFilter === 'Upcoming') return isAfter(eventDate, now)
+      if (activeFilter === 'Past') return !isAfter(eventDate, now)
       return true
     } catch {
-      return filter === 'all'
+      return activeFilter === 'All'
     }
   })
 
@@ -93,13 +81,12 @@ export default function MyTickets() {
           </h1>
         </div>
 
-        {/* Manual refresh button */}
         <button
           onClick={() => fetchTickets(true)}
           disabled={refreshing}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.4rem',
-            background: 'none', border: '1px solid var(--border)',
+            background: 'none', border: '1px solid var(--border-color)',
             borderRadius: 8, padding: '0.5rem 0.875rem',
             color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.83rem',
             opacity: refreshing ? 0.6 : 1,
@@ -112,56 +99,33 @@ export default function MyTickets() {
 
       {/* Filter Tabs */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '4px' }}>
-        <button 
-          onClick={() => setFilter('upcoming')}
-          style={{ 
-            padding: '6px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
-            background: filter === 'upcoming' ? 'var(--purple)' : 'transparent',
-            color: filter === 'upcoming' ? 'white' : 'var(--text-secondary)',
-            border: filter === 'upcoming' ? 'none' : '1px solid var(--border)',
-            transition: 'all 0.2s'
-          }}
-        >
-          Upcoming
-        </button>
-        <button 
-          onClick={() => setFilter('past')}
-          style={{ 
-            padding: '6px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
-            background: filter === 'past' ? 'var(--purple)' : 'transparent',
-            color: filter === 'past' ? 'white' : 'var(--text-secondary)',
-            border: filter === 'past' ? 'none' : '1px solid var(--border)',
-            transition: 'all 0.2s'
-          }}
-        >
-          Past
-        </button>
-        <button 
-          onClick={() => setFilter('all')}
-          style={{ 
-            padding: '6px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
-            background: filter === 'all' ? 'var(--purple)' : 'transparent',
-            color: filter === 'all' ? 'white' : 'var(--text-secondary)',
-            border: filter === 'all' ? 'none' : '1px solid var(--border)',
-            transition: 'all 0.2s'
-          }}
-        >
-          All
-        </button>
+        {['All', 'Upcoming', 'Past'].map(f => (
+          <button 
+            key={f}
+            onClick={() => setActiveFilter(f)}
+            style={{ 
+              padding: '6px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+              background: activeFilter === f ? 'var(--purple)' : 'transparent',
+              color: activeFilter === f ? 'white' : 'var(--text-secondary)',
+              border: activeFilter === f ? 'none' : '1px solid var(--border-color)',
+              transition: 'all 0.2s'
+            }}
+          >
+            {f}
+          </button>
+        ))}
       </div>
 
       {filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-          <Ticket size={48} style={{ color: 'var(--text-muted)', margin: '0 auto 16px', opacity: 0.5 }} />
-          <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
+        <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--card-background)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+          <Ticket size={48} style={{ color: 'gray', margin: '0 auto 16px', opacity: 0.5 }} />
+          <div style={{ fontSize: '18px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>
             No tickets found
-          </div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
-            {filter === 'all' ? 'Start exploring events and book your first ticket!' : 'Switch to a different filter to see your tickets.'}
           </div>
           <button 
             className="btn-purple" 
-            onClick={() => window.location.href = '/discover'}
+            onClick={() => navigate('/events')}
+            style={{ marginTop: '16px' }}
           >
             Discover Events
           </button>
@@ -169,22 +133,22 @@ export default function MyTickets() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {filtered.map((ticket) => (
-            <div key={ticket.id}>
-              {consentedEventIds.has(ticket.event_id) && (
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '4px',
-                  background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)',
-                  borderRadius: '12px', padding: '2px 8px',
-                  fontSize: '11px', color: 'var(--green)', fontWeight: 600,
-                  marginBottom: '8px',
-                }}>
-                  <ShieldCheck size={12} /> Terms Agreed
-                </div>
-              )}
-              <CompactTicketCard booking={ticket} event={ticket.event} />
-            </div>
+            <CompactTicketCard 
+              key={ticket.id}
+              booking={ticket} 
+              event={ticket.event} 
+              onExpand={(b) => setExpandedBooking(b)} 
+            />
           ))}
         </div>
+      )}
+
+      {expandedBooking && (
+        <ExpandedTicketModal 
+          booking={expandedBooking} 
+          event={expandedBooking.event} 
+          onClose={() => setExpandedBooking(null)} 
+        />
       )}
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

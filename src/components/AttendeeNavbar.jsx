@@ -98,15 +98,14 @@ export default function AttendeeNavbar() {
             <button 
               onClick={() => dispatch({ type: 'TOGGLE_THEME' })}
               style={{
-                width: 36, height: 36, borderRadius: '50%',
-                background: 'transparent', border: '1px solid var(--border)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', transition: 'all 0.3s ease',
-                color: theme === 'dark' ? 'var(--amber)' : 'var(--purple)'
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                padding: '8px', borderRadius: '8px', transition: 'background 0.2s',
               }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--border-color)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+              {theme === 'dark' ? <Sun size={20} color="#f59e0b" /> : <Moon size={20} color="#7c3aed" />}
             </button>
 
             {/* Notification Bell */}
