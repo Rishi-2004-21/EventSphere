@@ -21,7 +21,7 @@ export default function ExpandedTicketModal({ booking, event, onClose }) {
   const eventDate = event?.date || booking.event_date;
   const eventCity = event?.city || booking.event_city;
   const venue = event?.venue || 'TBA';
-  const time = event?.time || '';
+  const time = event?.event_time || event?.time || booking?.event_time || '';
   const banner = event?.banner_url || null;
   const category = event?.category || 'General';
 
@@ -168,11 +168,11 @@ export default function ExpandedTicketModal({ booking, event, onClose }) {
           {/* Stub / QR Section */}
           <div style={{ padding: '24px 20px', background: 'var(--bg-card-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ flex: 1, paddingRight: '20px' }}>
-              <div style={{ fontSize: '11px', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>ATTENDEE</div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: 'white', marginBottom: '16px' }}>{booking.attendee_name}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>ATTENDEE</div>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px' }}>{booking.attendee_name}</div>
               
-              <div style={{ fontSize: '11px', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>BOOKING REF</div>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: '#8b5cf6', fontFamily: 'monospace', wordBreak: 'break-all' }}>{booking.id.toUpperCase()}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>BOOKING REF</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--purple)', fontFamily: 'monospace', wordBreak: 'break-all' }}>{booking.id.toUpperCase()}</div>
             </div>
             
             <div style={{ background: 'white', padding: '10px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>

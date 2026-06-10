@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { formatCurrency } from '../../utils/formatCurrency';
-import { formatDate } from '../../utils/dateUtils';
+import { formatDate, formatTimeTo12Hour } from '../../utils/dateUtils';
 import StatusBadge from '../../components/StatusBadge';
 import { ArrowLeft, Users, DollarSign, Calendar, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -99,7 +99,7 @@ export default function OrganizerEventDetail() {
 
         {/* Event Info */}
         <div className="org-event-info">
-          <div className="event-meta-item"><Calendar size={16} /> {formatDate(event.date)} at {event.time}</div>
+          <div className="event-meta-item"><Calendar size={16} /> {formatDate(event.date)} at {event.time ? formatTimeTo12Hour(event.time) : 'TBA'}</div>
           <div className="event-meta-item"><MapPin size={16} /> {event.venue}, {event.city}</div>
           <p style={{ marginTop: '1rem', color: 'var(--color-text-muted)' }}>{event.description}</p>
         </div>

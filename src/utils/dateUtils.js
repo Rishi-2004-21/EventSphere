@@ -16,16 +16,32 @@ export function formatDateReadable(dateString) {
 
 export function formatTimeTo12Hour(timeString) {
   if (!timeString) return 'Time TBA';
-  if (timeString.includes('AM') || timeString.includes('PM')) {
-    return timeString.toUpperCase();
+  
+  if (timeString.includes('T')) {
+    try {
+      const d = new Date(timeString);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true }).toUpperCase();
+      }
+    } catch(e) {}
   }
+  
+  const timeUpper = timeString.toUpperCase();
+  if (timeUpper.includes('AM') || timeUpper.includes('PM')) {
+    return timeUpper;
+  }
+  
   try {
     const parts = timeString.split(':');
-    const hours = parseInt(parts[0], 10);
+    let hours = parseInt(parts[0], 10);
     const minutes = parts[1] || '00';
+    
+    // Some timestamps could include timezone offset like "14:18+05:30", so slice it.
+    const cleanMinutes = minutes.substring(0, 2);
+    
     const period = hours < 12 ? 'AM' : 'PM';
     const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-    return `${displayHours}:${minutes} ${period}`;
+    return `${displayHours}:${cleanMinutes} ${period}`;
   } catch (error) {
     return timeString;
   }
