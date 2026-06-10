@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { X, Calendar, Clock, MapPin, Building, Download, Share2 } from 'lucide-react';
 import QRCode from 'react-qr-code';
-import { formatDateReadable, formatTimeReadable } from '../utils/dateUtils';
+import { formatDateReadable, formatTimeTo12Hour } from '../utils/dateUtils';
 import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
 
@@ -89,11 +89,18 @@ export default function ExpandedTicketModal({ booking, event, onClose }) {
           }}
         >
           {/* Header Section */}
-          <div style={{ position: 'relative', height: '160px', width: '100%', backgroundColor: 'var(--bg-card-2)' }}>
-            {banner && <img src={banner} alt="Banner" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+          <div style={{ 
+            position: 'relative', 
+            minHeight: '150px', 
+            width: '100%', 
+            backgroundColor: '#7c3aed',
+            backgroundImage: banner ? `url(${banner})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}>
             <div style={{ 
               position: 'absolute', inset: 0, 
-              background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.9))' 
+              background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))' 
             }} />
             <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px' }}>
               <span className={`badge cat-${category}`}>{category}</span>
@@ -111,28 +118,28 @@ export default function ExpandedTicketModal({ booking, event, onClose }) {
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div style={{ color: 'var(--purple)' }}><Calendar size={18} /></div>
                 <div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.5px' }}>DATE</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.5px' }}>DATE</div>
                   <div style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600 }}>{formatDateReadable(eventDate)}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div style={{ color: 'var(--purple)' }}><Clock size={18} /></div>
                 <div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.5px' }}>TIME</div>
-                  <div style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600 }}>{time || 'TBA'}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.5px' }}>TIME</div>
+                  <div style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600 }}>{time ? formatTimeTo12Hour(time) : 'TBA'}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div style={{ color: 'var(--purple)' }}><MapPin size={18} /></div>
                 <div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.5px' }}>VENUE</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.5px' }}>VENUE</div>
                   <div style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600 }}>{venue}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div style={{ color: 'var(--purple)' }}><Building size={18} /></div>
                 <div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.5px' }}>CITY</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.5px' }}>CITY</div>
                   <div style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600 }}>{eventCity}</div>
                 </div>
               </div>
@@ -154,14 +161,14 @@ export default function ExpandedTicketModal({ booking, event, onClose }) {
           {/* Stub / QR Section */}
           <div style={{ padding: '24px 20px', background: 'var(--bg-card-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ flex: 1, paddingRight: '20px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>ATTENDEE</div>
-              <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px' }}>{booking.attendee_name}</div>
+              <div style={{ fontSize: '11px', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>ATTENDEE</div>
+              <div style={{ fontSize: '18px', fontWeight: 800, color: 'white', marginBottom: '16px' }}>{booking.attendee_name}</div>
               
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>BOOKING REF</div>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{booking.id.split('-')[0].toUpperCase()}</div>
+              <div style={{ fontSize: '11px', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>BOOKING REF</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'white', fontFamily: 'monospace' }}>{booking.id.split('-')[0].toUpperCase()}</div>
             </div>
             
-            <div style={{ background: 'white', padding: '8px', borderRadius: '12px' }}>
+            <div style={{ background: 'white', padding: '10px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
               <QRCode value={booking.ticket_qr_code || booking.id} size={110} />
             </div>
           </div>

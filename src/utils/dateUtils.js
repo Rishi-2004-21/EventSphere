@@ -1,42 +1,59 @@
-import { format, differenceInDays, parseISO, isValid } from 'date-fns';
-
-/**
- * Formats a date string/Date as "dd MMM yyyy"
- * e.g. "15 Aug 2025"
- */
-export function formatDate(dateInput) {
+export function formatDateReadable(dateString) {
+  if (!dateString) return 'Date TBA';
   try {
-    const d = typeof dateInput === 'string' ? parseISO(dateInput) : dateInput;
-    if (!isValid(d)) return 'Invalid date';
-    return format(d, 'dd MMM yyyy');
-  } catch {
-    return String(dateInput);
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString('en-IN', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  } catch (error) {
+    return dateString;
   }
 }
 
-/**
- * Returns number of full days between a given date and today.
- */
-export function getDaysSince(dateInput) {
+export function formatTimeTo12Hour(timeString) {
+  if (!timeString) return 'Time TBA';
+  if (timeString.includes('AM') || timeString.includes('PM')) {
+    return timeString.toUpperCase();
+  }
   try {
-    const d = typeof dateInput === 'string' ? parseISO(dateInput) : dateInput;
-    if (!isValid(d)) return 0;
-    return differenceInDays(new Date(), d);
-  } catch {
+    const parts = timeString.split(':');
+    const hours = parseInt(parts[0], 10);
+    const minutes = parts[1] || '00';
+    const period = hours < 12 ? 'AM' : 'PM';
+    const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    return `${displayHours}:${minutes} ${period}`;
+  } catch (error) {
+    return timeString;
+  }
+}
+
+export function formatDate(dateString) {
+  if (!dateString) return '';
+  try {
+    return new Date(dateString).toLocaleDateString('en-IN');
+  } catch (error) {
+    return dateString;
+  }
+}
+
+export function getDaysSince(dateString) {
+  try {
+    const date = new Date(dateString);
+    return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+  } catch (error) {
     return 0;
   }
 }
 
-/**
- * Formats a date+time for event display.
- * e.g. "Fri, 15 Aug 2025 at 09:00 AM"
- */
-export function formatEventDateTime(dateStr, timeStr) {
-  try {
-    const d = parseISO(`${dateStr}T${timeStr || '00:00'}:00`);
-    if (!isValid(d)) return `${dateStr} ${timeStr}`;
-    return format(d, "EEE, dd MMM yyyy 'at' hh:mm aa");
-  } catch {
-    return `${dateStr} ${timeStr}`;
-  }
+export function formatCurrencyINR(number) {
+  return number.toLocaleString('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 }

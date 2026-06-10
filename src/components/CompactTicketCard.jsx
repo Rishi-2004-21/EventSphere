@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, MapPin, Clock } from 'lucide-react';
 import QRCode from 'react-qr-code';
-import { formatDateReadable, formatTimeReadable } from '../utils/dateUtils';
+import { formatDateReadable, formatTimeTo12Hour } from '../utils/dateUtils';
 import ExpandedTicketModal from './ExpandedTicketModal';
 
 export default function CompactTicketCard({ booking, event }) {
@@ -94,7 +94,7 @@ export default function CompactTicketCard({ booking, event }) {
             {time && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Clock size={12} />
-                <span>{time}</span>
+                <span>{formatTimeTo12Hour(time)}</span>
               </div>
             )}
             
