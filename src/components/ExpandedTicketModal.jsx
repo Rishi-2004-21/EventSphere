@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { X, Calendar, Clock, MapPin, Building, Download, Share2 } from 'lucide-react';
+import { X, Calendar, Clock, MapPin, Building, Download, Share2, User } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import { formatDateReadable, formatTimeTo12Hour } from '../utils/dateUtils';
 import html2canvas from 'html2canvas';
@@ -143,6 +143,13 @@ export default function ExpandedTicketModal({ booking, event, onClose }) {
                   <div style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600 }}>{eventCity}</div>
                 </div>
               </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ color: 'var(--purple)' }}><User size={18} /></div>
+                <div>
+                  <div style={{ fontSize: '10px', color: 'grey', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>ORGANIZER</div>
+                  <div style={{ color: 'white', fontSize: '14px', fontWeight: 500 }}>{event?.organizer_name || booking.organizer_name || 'N/A'}</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -162,10 +169,10 @@ export default function ExpandedTicketModal({ booking, event, onClose }) {
           <div style={{ padding: '24px 20px', background: 'var(--bg-card-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ flex: 1, paddingRight: '20px' }}>
               <div style={{ fontSize: '11px', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>ATTENDEE</div>
-              <div style={{ fontSize: '18px', fontWeight: 800, color: 'white', marginBottom: '16px' }}>{booking.attendee_name}</div>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: 'white', marginBottom: '16px' }}>{booking.attendee_name}</div>
               
               <div style={{ fontSize: '11px', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>BOOKING REF</div>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: 'white', fontFamily: 'monospace' }}>{booking.id.split('-')[0].toUpperCase()}</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: '#8b5cf6', fontFamily: 'monospace', wordBreak: 'break-all' }}>{booking.id.toUpperCase()}</div>
             </div>
             
             <div style={{ background: 'white', padding: '10px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
