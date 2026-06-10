@@ -10,6 +10,7 @@ import {
   Eye, ToggleLeft, ToggleRight, AlertTriangle, CloudUpload
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import TimePicker12Hour from '../components/TimePicker12Hour'
 
 const CATEGORIES = ['Art', 'Tech', 'Fitness', 'Cultural', 'Community', 'Lifestyle']
 const CITIES = ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Pune', 'Kolkata', 'Goa']
@@ -399,7 +400,7 @@ export default function CreateEvent() {
             </div>
             <div className="form-group">
               <label className="form-label">Event Time <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>(optional)</span></label>
-              <input id="event-time" type="time" className="form-input" value={form.time} onChange={(e) => upd('time', e.target.value)} />
+              <TimePicker12Hour id="event-time" value={form.time} onChange={(val) => upd('time', val)} />
               {form.time && (
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
                   🕔 Event starts at {new Date(`2000-01-01T${form.time}`).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}

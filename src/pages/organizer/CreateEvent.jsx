@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { categorizeEvent, detectSpam } from '../../ai/aiModules';
 import { getAIEventDescription } from '../../ai/claudeAI';
-import { nanoid } from 'nanoid';
-import { Sparkles, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { supabase } from '../../supabase';
+import { Calendar, Image, FileText, CheckCircle, Info, Settings, Clock, Tag, Sparkles, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import TimePicker12Hour from '../../components/TimePicker12Hour';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -203,8 +204,12 @@ export default function CreateEvent() {
               </div>
               <div className="form-group">
                 <label className="form-label">Time *</label>
-                <input id="create-time" type="time" className="form-input"
-                  value={form.time} onChange={(e) => update('time', e.target.value)} required />
+                <TimePicker12Hour 
+                  id="create-time" 
+                  value={form.time} 
+                  onChange={(val) => update('time', val)} 
+                  required 
+                />
               </div>
             </div>
             <div className="form-group">
