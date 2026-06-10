@@ -32,7 +32,7 @@ export default function MyTickets() {
       bookings.map(async (b) => {
         const { data: evt } = await supabase
           .from('events')
-          .select('title, date, venue, city, category, organizer_name, description, organizer_id, time')
+          .select('title, date, venue, city, category, organizer_name, description, organizer_id, time, event_time')
           .eq('id', b.event_id)
           .single()
         return { ...b, event: evt }

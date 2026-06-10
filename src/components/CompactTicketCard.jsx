@@ -36,7 +36,7 @@ export default function CompactTicketCard({ booking, event }) {
   const eventDate = event?.date || booking.event_date;
   const eventCity = event?.city || booking.event_city;
   const venue = event?.venue || 'TBA';
-  const time = event?.time || '';
+  const time = event?.event_time || event?.time || '';
   const banner = event?.banner_url || null;
   const category = event?.category || 'General';
 
