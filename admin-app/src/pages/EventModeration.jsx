@@ -101,13 +101,15 @@ export default function EventModeration() {
     if (error) {
       toast.error('Failed to request changes')
     } else {
-      await supabase.from('notifications').insert([{
+      const { error: notifError } = await supabase.from('notifications').insert([{
         id: nanoid(),
         user_id: activeEvent.organizer_id,
-        message: `Changes requested for "${activeEvent.title}": ${adminNote}`,
+        message: `Your event "${activeEvent.title}" requires changes. Admin note: ${adminNote}`,
         is_read: false,
         created_at: new Date().toISOString()
       }])
+      
+      if (notifError) console.error('Notification error:', notifError);
 
       toast.success('Changes requested')
       setChangesModalOpen(false)
@@ -131,13 +133,15 @@ export default function EventModeration() {
     if (error) {
       toast.error('Failed to reject event')
     } else {
-      await supabase.from('notifications').insert([{
+      const { error: notifError } = await supabase.from('notifications').insert([{
         id: nanoid(),
         user_id: activeEvent.organizer_id,
         message: `Your event "${activeEvent.title}" has been rejected. Reason: ${rejectReason}`,
         is_read: false,
         created_at: new Date().toISOString()
       }])
+
+      if (notifError) console.error('Notification error:', notifError);
 
       toast.success('Event rejected')
       setRejectReason('')

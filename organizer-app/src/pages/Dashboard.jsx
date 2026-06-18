@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
@@ -6,7 +6,8 @@ import { getAIInsights } from '../ai/claudeAI'
 import { format } from 'date-fns'
 import {
   Sparkles, Wallet, Ticket, TrendingUp, DollarSign, Eye,
-  BarChart, Users, Calendar, Search, CheckCircle, ArrowRight
+  BarChart, Users, Calendar, Search, CheckCircle, ArrowRight,
+  ChevronDown, ChevronUp
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -160,7 +161,12 @@ export default function OrganizerDashboard() {
   const [aiInsights, setAiInsights] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [bookingSearch, setBookingSearch] = useState('')
+  const [expandedRows, setExpandedRows] = useState({})
   const realtimeRef = useRef(null)
+
+  const toggleRow = (id) => {
+    setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }))
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -239,26 +245,23 @@ export default function OrganizerDashboard() {
       </div>
 
       {(!currentUser?.upi_id || !currentUser?.upi_qr_url) && (
-        <div style={{
-          background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
+        <div className="warning-banner" style={{
           borderRadius: '12px', padding: '1.25rem', marginBottom: '2rem',
           display: 'flex', alignItems: 'flex-start', gap: '1rem',
-          boxShadow: '0 4px 12px rgba(245,158,11,0.05)'
         }}>
-          <div style={{ background: 'rgba(245,158,11,0.2)', padding: '0.5rem', borderRadius: '50%', color: '#f59e0b' }}>
+          <div style={{ background: 'color-mix(in srgb, var(--color-warning) 20%, transparent)', padding: '0.5rem', borderRadius: '50%' }}>
             <DollarSign size={20} />
           </div>
           <div style={{ flex: 1 }}>
-            <h3 style={{ color: '#f59e0b', fontSize: '1.05rem', fontWeight: 800, margin: '0 0 0.35rem' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '0 0 0.35rem' }}>
               Your payment settings are incomplete
             </h3>
-            <p style={{ color: '#fbbf24', fontSize: '0.85rem', margin: '0 0 1rem', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '0.85rem', margin: '0 0 1rem', lineHeight: 1.5 }}>
               Attendees cannot book your events until you add your UPI ID and QR code. 
               Please complete your payment profile to start receiving bookings.
             </p>
             <button 
-              className="btn-accent"
-              style={{ background: '#f59e0b', color: '#1a2235', fontWeight: 700, padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+              style={{ background: 'var(--color-warning)', color: 'var(--color-bg-card)', border: 'none', borderRadius: 'var(--radius-md)', fontWeight: 700, padding: '0.5rem 1rem', fontSize: '0.85rem', cursor: 'pointer' }}
               onClick={() => navigate('/profile')}
             >
               Set Up Payments Now
@@ -356,30 +359,53 @@ export default function OrganizerDashboard() {
                   .filter((b) => b.event_id === evt.id)
                   .reduce((s, b) => s + (Number(b.organizer_received) || 0), 0)
                 return (
-                  <tr key={evt.id}>
-                    <td style={{ fontWeight: 600, maxWidth: '200px' }}>
-                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {evt.title}
-                      </span>
-                      {(evt.status === 'rejected' || evt.status === 'changes-requested') && (evt.rejection_reason || evt.admin_note) && (
-                        <div style={{ color: 'var(--red)', fontSize: '0.75rem', marginTop: '0.25rem', whiteSpace: 'normal', lineHeight: 1.4, fontWeight: 500 }}>
-                          Reason: {evt.status === 'rejected' ? evt.rejection_reason : evt.admin_note}
+                  <React.Fragment key={evt.id}>
+                    <tr>
+                      <td style={{ fontWeight: 600, maxWidth: '200px' }}>
+                        <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {evt.title}
+                        </span>
+                      </td>
+                      <td><span className="badge badge-blue">{evt.category}</span></td>
+                      <td><StatusBadge status={evt.status} /></td>
+                      <td>{evt.tickets_sold || 0}</td>
+                      <td style={{ color: 'var(--color-success)' }}>{formatCurrency(evtRevenue)}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          <button className="btn-secondary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+                            onClick={() => navigate(`/events/${evt.id}`)}>
+                            <Eye size={12} /> View
+                          </button>
+                          {(evt.status === 'rejected' || evt.status === 'changes-requested') && (
+                            <button className="btn-secondary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+                              onClick={() => toggleRow(evt.id)}>
+                              {expandedRows[evt.id] ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                            </button>
+                          )}
                         </div>
-                      )}
-                    </td>
-                    <td><span className="badge badge-blue">{evt.category}</span></td>
-                    <td><StatusBadge status={evt.status} /></td>
-                    <td>{evt.tickets_sold || 0}</td>
-                    <td style={{ color: 'var(--green)' }}>{formatCurrency(evtRevenue)}</td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        <button className="btn-secondary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
-                          onClick={() => navigate(`/events/${evt.id}`)}>
-                          <Eye size={12} /> View
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                    </tr>
+                    {expandedRows[evt.id] && evt.status === 'rejected' && (
+                      <tr>
+                        <td colSpan="6" style={{ padding: '0' }}>
+                          <div style={{ margin: '0.5rem 1rem 1rem', padding: '1rem', background: 'color-mix(in srgb, var(--color-error) 10%, transparent)', border: '1px solid var(--color-error)', borderRadius: '8px' }}>
+                            <div style={{ color: 'var(--color-error)', fontWeight: 'bold', marginBottom: '0.5rem' }}>Rejection Reason</div>
+                            <div style={{ color: 'var(--color-text-primary)' }}>{evt.rejection_reason || 'No reason provided by admin.'}</div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {expandedRows[evt.id] && evt.status === 'changes-requested' && (
+                      <tr>
+                        <td colSpan="6" style={{ padding: '0' }}>
+                          <div style={{ margin: '0.5rem 1rem 1rem', padding: '1rem', background: 'color-mix(in srgb, var(--color-warning) 10%, transparent)', border: '1px solid var(--color-warning)', borderRadius: '8px' }}>
+                            <div style={{ color: 'var(--color-warning)', fontWeight: 'bold', marginBottom: '0.5rem' }}>Changes Required</div>
+                            <div style={{ color: 'var(--color-text-primary)' }}>{evt.admin_note || 'No notes provided by admin.'}</div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 )
               })}
             </tbody>
