@@ -72,10 +72,52 @@ export default function CreateEvent() {
     earlyBirdLimitType: 'date', earlyBirdEndDate: '', earlyBirdLimitPeople: '',
     useDefaultTerms: true,
     customTerms: '',
+    // Custom date picker parts
+    dateDay: '', dateMonth: '', dateYear: '',
+    // Custom early bird date parts
+    ebDay: '', ebMonth: '', ebYear: '',
   })
   const [aiCategories, setAiCategories] = useState([])
 
   function upd(field, val) { setForm((f) => ({ ...f, [field]: val })) }
+
+  // Combine day/month/year into YYYY-MM-DD for the main event date
+  function updateMainDate(day, month, year) {
+    if (day && month && year) {
+      const dd = String(day).padStart(2, '0')
+      const mm = String(month).padStart(2, '0')
+      upd('date', `${year}-${mm}-${dd}`)
+    } else {
+      upd('date', '')
+    }
+  }
+
+  // Combine day/month/year into YYYY-MM-DD for early bird end date
+  function updateEbDate(day, month, year) {
+    if (day && month && year) {
+      const dd = String(day).padStart(2, '0')
+      const mm = String(month).padStart(2, '0')
+      upd('earlyBirdEndDate', `${year}-${mm}-${dd}`)
+    } else {
+      upd('earlyBirdEndDate', '')
+    }
+  }
+
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
+  const currentYear = new Date().getFullYear()
+  const YEARS = Array.from({ length: 6 }, (_, i) => currentYear + i)
+
+  const selectStyle = {
+    background: 'var(--color-input-background)',
+    color: 'var(--color-text-primary)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '8px',
+    padding: '10px 12px',
+    cursor: 'pointer',
+    outline: 'none',
+    fontSize: '14px',
+    transition: 'border-color 0.2s',
+  }
 
   async function generateAIDescription() {
     if (!form.title) { toast.error('Enter a title first.'); return }
@@ -404,7 +446,43 @@ export default function CreateEvent() {
           <div className="auth-form-stack">
             <div className="form-group">
               <label className="form-label">Event Date</label>
-              <input id="event-date" type="date" className="form-input" value={form.date} onChange={(e) => upd('date', e.target.value)} />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <select
+                  style={selectStyle}
+                  value={form.dateDay}
+                  onChange={e => { upd('dateDay', e.target.value); updateMainDate(e.target.value, form.dateMonth, form.dateYear) }}
+                >
+                  <option value="">Day</option>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+                <select
+                  style={{ ...selectStyle, flex: 1 }}
+                  value={form.dateMonth}
+                  onChange={e => { upd('dateMonth', e.target.value); updateMainDate(form.dateDay, e.target.value, form.dateYear) }}
+                >
+                  <option value="">Month</option>
+                  {MONTHS.map((m, i) => (
+                    <option key={m} value={i + 1}>{m}</option>
+                  ))}
+                </select>
+                <select
+                  style={selectStyle}
+                  value={form.dateYear}
+                  onChange={e => { upd('dateYear', e.target.value); updateMainDate(form.dateDay, form.dateMonth, e.target.value) }}
+                >
+                  <option value="">Year</option>
+                  {YEARS.map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+              {form.date && (
+                <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '0.3rem' }}>
+                  📅 Selected: {new Date(form.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </div>
+              )}
             </div>
             <div className="form-group">
               <label className="form-label">Event Time <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>(optional)</span></label>
@@ -657,9 +735,9 @@ export default function CreateEvent() {
                 <div 
                   onClick={() => upd('earlyBirdLimitType', 'date')}
                   style={{
-                    border: form.earlyBirdLimitType === 'date' ? '2px solid var(--teal)' : '1px solid var(--border)',
+                    border: form.earlyBirdLimitType === 'date' ? '2px solid var(--color-organizer-accent)' : '1px solid var(--color-border)',
                     borderRadius: '8px', padding: '16px', cursor: 'pointer',
-                    background: form.earlyBirdLimitType === 'date' ? 'var(--teal-dim)' : 'var(--bg-card-2)'
+                    background: form.earlyBirdLimitType === 'date' ? 'var(--teal-dim)' : 'var(--color-bg-secondary)'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>
@@ -671,8 +749,23 @@ export default function CreateEvent() {
                   {form.earlyBirdLimitType === 'date' && (
                     <div className="form-group" style={{ marginTop: '1rem' }}>
                       <label className="form-label">Early Bird End Date</label>
-                      <input type="date" className="form-input" 
-                        value={form.earlyBirdEndDate} onChange={(e) => upd('earlyBirdEndDate', e.target.value)} />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <select style={selectStyle} value={form.ebDay}
+                          onChange={e => { upd('ebDay', e.target.value); updateEbDate(e.target.value, form.ebMonth, form.ebYear) }}>
+                          <option value="">Day</option>
+                          {Array.from({ length: 31 }, (_, i) => i + 1).map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                        <select style={{ ...selectStyle, flex: 1 }} value={form.ebMonth}
+                          onChange={e => { upd('ebMonth', e.target.value); updateEbDate(form.ebDay, e.target.value, form.ebYear) }}>
+                          <option value="">Month</option>
+                          {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+                        </select>
+                        <select style={selectStyle} value={form.ebYear}
+                          onChange={e => { upd('ebYear', e.target.value); updateEbDate(form.ebDay, form.ebMonth, e.target.value) }}>
+                          <option value="">Year</option>
+                          {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -681,15 +774,15 @@ export default function CreateEvent() {
                 <div 
                   onClick={() => upd('earlyBirdLimitType', 'people')}
                   style={{
-                    border: form.earlyBirdLimitType === 'people' ? '2px solid var(--teal)' : '1px solid var(--border)',
+                    border: form.earlyBirdLimitType === 'people' ? '2px solid var(--color-organizer-accent)' : '1px solid var(--color-border)',
                     borderRadius: '8px', padding: '16px', cursor: 'pointer',
-                    background: form.earlyBirdLimitType === 'people' ? 'var(--teal-dim)' : 'var(--bg-card-2)'
+                    background: form.earlyBirdLimitType === 'people' ? 'var(--teal-dim)' : 'var(--color-bg-secondary)'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>
                     <Users size={16} /> By Number of People
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
                     First N customers get the early bird price.
                   </div>
                   {form.earlyBirdLimitType === 'people' && (
@@ -697,7 +790,7 @@ export default function CreateEvent() {
                       <label className="form-label">Number of Early Bird Tickets</label>
                       <input type="number" className="form-input" min="1" placeholder="e.g. 50"
                         value={form.earlyBirdLimitPeople} onChange={(e) => upd('earlyBirdLimitPeople', e.target.value)} />
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
                         For example, if your event capacity is 100 and you enter 50, then the first 50 people to book get the early bird price. After 50 bookings, the price automatically switches to the standard price.
                       </div>
                     </div>
@@ -708,19 +801,19 @@ export default function CreateEvent() {
                 <div 
                   onClick={() => upd('earlyBirdLimitType', 'manual')}
                   style={{
-                    border: form.earlyBirdLimitType === 'manual' ? '2px solid var(--teal)' : '1px solid var(--border)',
+                    border: form.earlyBirdLimitType === 'manual' ? '2px solid var(--color-organizer-accent)' : '1px solid var(--color-border)',
                     borderRadius: '8px', padding: '16px', cursor: 'pointer',
-                    background: form.earlyBirdLimitType === 'manual' ? 'var(--teal-dim)' : 'var(--bg-card-2)'
+                    background: form.earlyBirdLimitType === 'manual' ? 'var(--teal-dim)' : 'var(--color-bg-secondary)'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>
                     <Settings size={16} /> Manual Control
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
                     You decide when to switch from early bird to standard pricing.
                   </div>
                   {form.earlyBirdLimitType === 'manual' && (
-                    <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-primary)', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
+                    <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'var(--color-text-primary)', padding: '0.75rem', background: 'var(--color-bg-secondary)', borderRadius: '6px' }}>
                       Note: You can change the pricing from your event dashboard at any time.
                     </div>
                   )}

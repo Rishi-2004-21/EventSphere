@@ -3,6 +3,9 @@ import { createContext, useContext, useReducer, useEffect } from 'react'
 const AuthContext = createContext(null)
 
 const initialTheme = localStorage.getItem('organizer_theme') || 'dark'
+// Apply theme immediately to avoid flash of wrong colors
+document.documentElement.setAttribute('data-theme', initialTheme)
+document.body.setAttribute('data-theme', initialTheme)
 
 const initialState = {
   auth: {
@@ -53,6 +56,8 @@ function authReducer(state, action) {
     case 'TOGGLE_THEME':
       const newTheme = state.theme === 'dark' ? 'light' : 'dark'
       localStorage.setItem('organizer_theme', newTheme)
+      document.documentElement.setAttribute('data-theme', newTheme)
+      document.body.setAttribute('data-theme', newTheme)
       return {
         ...state,
         theme: newTheme

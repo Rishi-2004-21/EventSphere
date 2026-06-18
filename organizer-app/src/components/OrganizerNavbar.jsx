@@ -188,7 +188,12 @@ export default function OrganizerNavbar() {
                           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: dotColor, marginTop: '6px', flexShrink: 0 }} />
                           <div>
                             <div style={{ fontSize: '0.85rem', color: 'var(--color-text-primary)', marginBottom: '0.25rem', lineHeight: 1.4 }}>{notif.message}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{formatDistanceToNow(new Date(notif.created_at))} ago</div>
+                            <div 
+                              style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', cursor: 'help' }}
+                              title={new Date(notif.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                            >
+                              {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, includeSeconds: true })}
+                            </div>
                           </div>
                         </div>
                       )
@@ -218,21 +223,21 @@ export default function OrganizerNavbar() {
                 {showUserMenu && (
                   <div style={{
                     position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                    background: 'var(--bg-card)', border: '1px solid var(--border)',
+                    background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
                     borderRadius: '8px', minWidth: '160px', zIndex: 200,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)', overflow: 'hidden',
+                    boxShadow: '0 8px 24px var(--color-shadow)', overflow: 'hidden',
                   }}>
-                    <button onClick={() => { navigate('/organizer/profile'); setShowUserMenu(false) }}
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.65rem 1rem', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '0.85rem', cursor: 'pointer' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    <button onClick={() => { navigate('/profile'); setShowUserMenu(false) }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.65rem 1rem', background: 'none', border: 'none', color: 'var(--color-text-primary)', fontSize: '0.85rem', cursor: 'pointer' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-secondary)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'none'}
                     >
                       <User size={14} style={{ color: 'var(--teal)' }} /> My Profile
                     </button>
-                    <div style={{ height: '1px', background: 'var(--border)' }} />
+                    <div style={{ height: '1px', background: 'var(--color-border)' }} />
                     <button onClick={handleLogout}
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.65rem 1rem', background: 'none', border: 'none', color: '#0891b2', fontSize: '0.85rem', cursor: 'pointer' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(8,145,178,0.08)'}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.65rem 1rem', background: 'none', border: 'none', color: 'var(--color-organizer-accent)', fontSize: '0.85rem', cursor: 'pointer' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-secondary)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'none'}
                     >
                       <LogOut size={14} /> Sign Out

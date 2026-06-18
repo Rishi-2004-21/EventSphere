@@ -40,7 +40,9 @@ function AppInner() {
 
   useEffect(() => {
     if (theme) {
-      document.body.setAttribute('data-theme', theme)
+      // Apply to <html> element so native browser controls (date pickers) inherit color-scheme
+      document.documentElement.setAttribute('data-theme', theme)
+      document.body.setAttribute('data-theme', theme) // keep for any old body selectors
     }
   }, [theme])
 
