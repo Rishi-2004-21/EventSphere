@@ -13,7 +13,7 @@ const QUICK_REPLIES = [
 function matchAttendeeKeyword(msg) {
   const m = msg.toLowerCase()
   if (m.includes('how to book') || m.includes('book a ticket') || m.includes('how do i book') || m.includes('booking process')) {
-    return `Here's how to book a ticket on EventSphere 🎟️\n\n1️⃣ Browse events on the **Discover** feed\n2️⃣ Click on an event you like\n3️⃣ Click the **Book Now** button\n4️⃣ Review the payment breakdown (10% platform fee, 90% to organizer)\n5️⃣ Click **Pay Now** and complete payment via Razorpay\n6️⃣ Your ticket with QR code is generated instantly and sent to your email!`
+    return `Here's how to book a ticket on Tixque 🎟️\n\n1️⃣ Browse events on the **Discover** feed\n2️⃣ Click on an event you like\n3️⃣ Click the **Book Now** button\n4️⃣ Review the payment breakdown (10% platform fee, 90% to organizer)\n5️⃣ Click **Pay Now** and complete payment via Razorpay\n6️⃣ Your ticket with QR code is generated instantly and sent to your email!`
   }
   if (m.includes('my ticket') || m.includes('see my ticket') || m.includes('view ticket') || m.includes('where are my ticket')) {
     return `You can find all your tickets on the **My Tickets** page 🎫\n\nEach ticket shows a QR code you can use at the venue. You can also download or print any ticket from there!`
@@ -25,7 +25,7 @@ function matchAttendeeKeyword(msg) {
     return `Finding events is easy! 🔍\n\n• Use the **category tabs** (Tech, Art, Fitness, Cultural, etc.) on the Discover page\n• Use the **search bar** to search by event name\n• Use the **city filter** to find events near you\n• Scroll the **Trending** section for popular events!`
   }
   if (m.includes('cancel') || m.includes('refund') || m.includes('cancellation')) {
-    return `For cancellations and refunds 📝\n\nCurrently, tickets are non-refundable once booked. If you have a special circumstance, please contact our support team at support@eventsphere.in and we'll do our best to help you!`
+    return `For cancellations and refunds 📝\n\nCurrently, tickets are non-refundable once booked. If you have a special circumstance, please contact our support team at support@tixque.in and we'll do our best to help you!`
   }
   if (m.includes('wishlist') || m.includes('heart') || m.includes('save event') || m.includes('favourite') || m.includes('favorite')) {
     return `To save events to your wishlist ❤️\n\nClick the **heart icon** on any event card or event detail page. Visit your **Wishlist** from the navbar to see all saved events anytime!`
@@ -34,10 +34,10 @@ function matchAttendeeKeyword(msg) {
     return `Your QR code is your entry pass! 📱\n\nAfter booking, find your QR code in **My Tickets**. Show it at the venue entrance for scanning. You can also download the ticket as a PNG image or print it!`
   }
   if (m.includes('organizer') || m.includes('contact organizer')) {
-    return `Each event page shows the **Organizer Name**. For event-specific queries, look for contact details in the event description. For platform issues, reach us at support@eventsphere.in 📧`
+    return `Each event page shows the **Organizer Name**. For event-specific queries, look for contact details in the event description. For platform issues, reach us at support@tixque.in 📧`
   }
   if (m.includes('hello') || m.includes('hi') || m.includes('hey') || m.includes('help')) {
-    return `Hello! I'm EventSphere's AI assistant 👋\n\nI can help you:\n• 🎟️ Book tickets step-by-step\n• 🔍 Find events by category or city\n• 💳 Understand payment fees\n• 📋 Manage your tickets & wishlist\n\nWhat would you like to know?`
+    return `Hello! I'm Tixque's AI assistant 👋\n\nI can help you:\n• 🎟️ Book tickets step-by-step\n• 🔍 Find events by category or city\n• 💳 Understand payment fees\n• 📋 Manage your tickets & wishlist\n\nWhat would you like to know?`
   }
   return null
 }
@@ -54,7 +54,7 @@ export default function ChatBot() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      text: `Hi ${userName}! 👋 I'm EventSphere's AI assistant.\n\nI can help you discover events, book tickets, check your bookings, and answer any platform questions. What's on your mind?`,
+      text: `Hi ${userName}! 👋 I'm Tixque's AI assistant.\n\nI can help you discover events, book tickets, check your bookings, and answer any platform questions. What's on your mind?`,
       time: new Date(),
     },
   ])
@@ -146,7 +146,7 @@ export default function ChatBot() {
               <Sparkles size={14} />
             </div>
             <div>
-              <div className="chatbot-header-title">EventSphere AI Assistant</div>
+              <div className="chatbot-header-title">Tixque AI Assistant</div>
               <div className="chatbot-online-status">
                 <span className="chatbot-online-dot" />
                 Online

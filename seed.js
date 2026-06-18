@@ -8,7 +8,7 @@ const users = [
   {
     id: 'att-1234',
     name: 'Rishi',
-    email: 'rishi@eventsphere.com',
+    email: 'rishi@tixque.com',
     password: 'attendee123',
     role: 'attendee',
     is_verified: true,
@@ -21,7 +21,7 @@ const users = [
   {
     id: 'org-1234',
     name: 'Priya',
-    email: 'priya@eventsphere.com',
+    email: 'priya@tixque.com',
     password: 'organizer123',
     role: 'organizer',
     is_verified: true,
@@ -34,7 +34,7 @@ const users = [
   {
     id: 'adm-1234',
     name: 'Super Admin',
-    email: 'admin@eventsphere.com',
+    email: 'admin@tixque.com',
     password: 'admin123',
     role: 'admin',
     is_verified: true,

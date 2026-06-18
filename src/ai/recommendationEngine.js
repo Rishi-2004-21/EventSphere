@@ -1,4 +1,4 @@
-// recommendationEngine.js — EventSphere AI Recommendation Engine
+// recommendationEngine.js — Tixque AI Recommendation Engine
 // Pure local scoring — no external API calls.
 // Scores each event for a given attendee based on 4 layers:
 // 1. Interest matching   2. Behavior (views/bookings/wishlist)
@@ -58,7 +58,7 @@ export function calculateEventScore(event, user, bookingHistory = [], categorySc
   } = preferences
 
   let score = 0
-  let reason = 'Popular on EventSphere'
+  let reason = 'Popular on Tixque'
   let type = 'trending'
 
   const userInterests = user?.interests || []
@@ -254,7 +254,7 @@ export function getPersonalizedRecommendations(user, events, allBookings = [], c
     return getColdStartRecommendations(events).map((e) => ({
       ...e,
       _score: e._score || 0,
-      _reason: e._reason || 'Trending on EventSphere',
+      _reason: e._reason || 'Trending on Tixque',
       _type: 'cold_start',
     }))
   }

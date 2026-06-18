@@ -33,6 +33,7 @@ export default function EventModeration() {
   const [approveWarningModalOpen, setApproveWarningModalOpen] = useState(false)
   const [activeEvent, setActiveEvent] = useState(null)
   const [adminNote, setAdminNote] = useState('')
+  const [rejectReason, setRejectReason] = useState('')
 
   useEffect(() => {
     fetchEvents()
@@ -94,7 +95,7 @@ export default function EventModeration() {
 
     const { error } = await supabase
       .from('events')
-      .update({ status: 'changes-requested' })
+      .update({ status: 'changes-requested', admin_note: adminNote, reviewed_by: 'SuperAdmin', reviewed_at: new Date().toISOString() })
       .eq('id', activeEvent.id)
 
     if (error) {
@@ -117,9 +118,14 @@ export default function EventModeration() {
   }
 
   async function handleReject() {
+    if (!rejectReason.trim()) {
+      toast.error('Please enter a reason for rejection')
+      return
+    }
+
     const { error } = await supabase
       .from('events')
-      .update({ status: 'rejected' })
+      .update({ status: 'rejected', rejection_reason: rejectReason, reviewed_by: 'SuperAdmin', reviewed_at: new Date().toISOString() })
       .eq('id', activeEvent.id)
 
     if (error) {
@@ -128,12 +134,13 @@ export default function EventModeration() {
       await supabase.from('notifications').insert([{
         id: nanoid(),
         user_id: activeEvent.organizer_id,
-        message: `Your event "${activeEvent.title}" has been rejected.`,
+        message: `Your event "${activeEvent.title}" has been rejected. Reason: ${rejectReason}`,
         is_read: false,
         created_at: new Date().toISOString()
       }])
 
       toast.success('Event rejected')
+      setRejectReason('')
       setRejectModalOpen(false)
       setActiveEvent(null)
       fetchEvents()
@@ -238,11 +245,19 @@ export default function EventModeration() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div className="card" style={{ width: '400px', maxWidth: '90%' }}>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--red)' }}>Reject Event</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1rem' }}>
               Are you sure you want to reject "{activeEvent?.title}"? This action cannot be easily undone.
             </p>
+            <textarea
+              className="form-input"
+              rows={4}
+              placeholder="Explain why the event is being rejected..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              style={{ marginBottom: '1rem', resize: 'vertical' }}
+            />
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-              <button className="btn-ghost" onClick={() => setRejectModalOpen(false)}>Cancel</button>
+              <button className="btn-ghost" onClick={() => { setRejectModalOpen(false); setRejectReason(''); }}>Cancel</button>
               <button className="btn-accent" style={{ background: 'var(--red)' }} onClick={handleReject}>Reject</button>
             </div>
           </div>

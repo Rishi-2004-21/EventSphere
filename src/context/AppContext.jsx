@@ -30,7 +30,7 @@ function appReducer(state, action) {
     // ── THEME ─────────────────────────────────────────────────────────────────
     case 'TOGGLE_THEME': {
       const newTheme = state.theme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('eventsphere_theme', newTheme);
+      localStorage.setItem('tixque_theme', newTheme);
       return { ...state, theme: newTheme };
     }
     case 'SET_THEME': {
@@ -267,18 +267,18 @@ export function AppProvider({ children }) {
   const [authLoading, setAuthLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const savedUser = localStorage.getItem('eventsphere_user');
+    const savedUser = localStorage.getItem('tixque_user');
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
         dispatch({ type: 'LOGIN', payload: user });
       } catch (e) {
-        localStorage.removeItem('eventsphere_user');
+        localStorage.removeItem('tixque_user');
       }
     }
     
     // Initialize theme from localStorage
-    const savedTheme = localStorage.getItem('eventsphere_theme');
+    const savedTheme = localStorage.getItem('tixque_theme');
     if (savedTheme) {
       dispatch({ type: 'SET_THEME', payload: savedTheme });
     }
@@ -300,13 +300,13 @@ export function AppProvider({ children }) {
     }
 
     console.log("LOGIN RETURN USER:", data);
-    localStorage.setItem('eventsphere_user', JSON.stringify(data));
+    localStorage.setItem('tixque_user', JSON.stringify(data));
     dispatch({ type: 'LOGIN', payload: data });
     return data;
   };
 
   const logoutUser = () => {
-    localStorage.removeItem('eventsphere_user');
+    localStorage.removeItem('tixque_user');
     dispatch({ type: 'LOGOUT' });
   };
 

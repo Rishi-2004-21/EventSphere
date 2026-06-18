@@ -1,11 +1,11 @@
-// seedData.js — EventSphere seed data
+// seedData.js — Tixque seed data
 
 export const SEED_USERS = [
   // ── Admin ──────────────────────────────────────────────────────────────────
   {
     id: 'admin-001',
     name: 'Admin User',
-    email: 'admin@eventsphere.com',
+    email: 'admin@tixque.com',
     password: 'admin123',
     role: 'admin',
     avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AdminUser',
@@ -16,7 +16,7 @@ export const SEED_USERS = [
   {
     id: 'org-001',
     name: 'Priya Mehta',
-    email: 'priya@eventsphere.com',
+    email: 'priya@tixque.com',
     password: 'org123',
     role: 'organizer',
     isVerified: true,
@@ -28,7 +28,7 @@ export const SEED_USERS = [
   {
     id: 'org-002',
     name: 'Arjun Sharma',
-    email: 'arjun@eventsphere.com',
+    email: 'arjun@tixque.com',
     password: 'org123',
     role: 'organizer',
     isVerified: true,
@@ -40,7 +40,7 @@ export const SEED_USERS = [
   {
     id: 'org-003',
     name: 'Kavitha Nair',
-    email: 'kavitha@eventsphere.com',
+    email: 'kavitha@tixque.com',
     password: 'org123',
     role: 'organizer',
     isVerified: false,
@@ -54,7 +54,7 @@ export const SEED_USERS = [
   {
     id: 'att-001',
     name: 'Rohit Verma',
-    email: 'rohit@eventsphere.com',
+    email: 'rohit@tixque.com',
     password: 'user123',
     role: 'attendee',
     city: 'Mumbai',

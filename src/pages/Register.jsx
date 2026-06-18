@@ -72,12 +72,12 @@ export default function Register() {
 
       login(newUser) // Updates AuthContext
       
-      const storedUser = JSON.parse(localStorage.getItem('eventsphere_user') || 'null')
+      const storedUser = JSON.parse(localStorage.getItem('tixque_user') || 'null')
       if (!storedUser) {
-        localStorage.setItem('eventsphere_user', JSON.stringify(newUser))
+        localStorage.setItem('tixque_user', JSON.stringify(newUser))
       }
       
-      toast.success('welcome to EventSphere')
+      toast.success('welcome to Tixque')
       window.location.href = '/discover'
 
     } catch (err) {
@@ -93,7 +93,7 @@ export default function Register() {
     <div className="auth-page">
       <div className="auth-bg-glow" />
       <div className="auth-card">
-        <div className="auth-logo-text">EventSphere</div>
+        <div className="auth-logo-text">Tixque</div>
         <div className="auth-portal-label">Attendee Portal</div>
 
         <div className="auth-heading">Create Your Account</div>

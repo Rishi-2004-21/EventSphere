@@ -52,7 +52,7 @@ serve(async (req) => {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Ticket is Confirmed — EventSphere</title>
+  <title>Your Ticket is Confirmed — Tixque</title>
 </head>
 <body style="margin:0;padding:0;background:#0a0f1e;font-family:'Segoe UI',Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0f1e;padding:32px 0;">
@@ -63,7 +63,7 @@ serve(async (req) => {
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#4c1d95,#7c3aed);padding:32px;text-align:center;">
-              <div style="font-size:28px;font-weight:900;color:white;letter-spacing:-1px;">EventSphere</div>
+              <div style="font-size:28px;font-weight:900;color:white;letter-spacing:-1px;">Tixque</div>
               <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px;">Your Event Ticketing Platform</div>
             </td>
           </tr>
@@ -101,7 +101,7 @@ serve(async (req) => {
                       <tr>
                         <td style="padding:8px 0;">
                           <span style="font-size:11px;color:#556080;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">🎤 Organizer</span><br/>
-                          <span style="font-size:15px;color:#f0f4ff;font-weight:600;">${organizer_name || "EventSphere"}</span>
+                          <span style="font-size:15px;color:#f0f4ff;font-weight:600;">${organizer_name || "Tixque"}</span>
                         </td>
                       </tr>
                     </table>
@@ -168,10 +168,10 @@ serve(async (req) => {
           <!-- Footer -->
           <tr>
             <td style="background:#111827;border-top:1px solid #2a3a55;padding:24px 32px;text-align:center;">
-              <div style="font-size:22px;font-weight:900;color:#7c3aed;margin-bottom:8px;">EventSphere</div>
+              <div style="font-size:22px;font-weight:900;color:#7c3aed;margin-bottom:8px;">Tixque</div>
               <div style="font-size:12px;color:#556080;line-height:1.6;">
                 This is an automated confirmation email. Please do not reply.<br/>
-                If you have questions, contact support@eventsphere.in
+                If you have questions, contact support@tixque.in
               </div>
             </td>
           </tr>
@@ -193,7 +193,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         sender: {
-          name: "EventSphere",
+          name: "Tixque",
           email: "rishienjamuri@gmail.com",
         },
         to: [

@@ -43,7 +43,7 @@ export default function Register() {
 
     setTimeout(() => {
       dispatch({ type: 'LOGIN', payload: newUser });
-      toast.success(`Welcome to EventSphere, ${form.name.split(' ')[0]}!`);
+      toast.success(`Welcome to Tixque, ${form.name.split(' ')[0]}!`);
       if (form.role === 'organizer') navigate('/organizer');
       else navigate('/events');
     }, 600);
@@ -55,7 +55,7 @@ export default function Register() {
       <div className="auth-card auth-card-lg">
         <div className="auth-logo">
           <div className="logo-icon"><Zap size={20} fill="currentColor" /></div>
-          <span className="logo-text">EventSphere</span>
+          <span className="logo-text">Tixque</span>
         </div>
         <h1 className="auth-title">Create account</h1>
         <p className="auth-sub">Join India's AI-powered event platform</p>

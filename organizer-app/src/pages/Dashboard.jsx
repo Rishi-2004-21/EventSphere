@@ -361,6 +361,11 @@ export default function OrganizerDashboard() {
                       <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {evt.title}
                       </span>
+                      {(evt.status === 'rejected' || evt.status === 'changes-requested') && (evt.rejection_reason || evt.admin_note) && (
+                        <div style={{ color: 'var(--red)', fontSize: '0.75rem', marginTop: '0.25rem', whiteSpace: 'normal', lineHeight: 1.4, fontWeight: 500 }}>
+                          Reason: {evt.status === 'rejected' ? evt.rejection_reason : evt.admin_note}
+                        </div>
+                      )}
                     </td>
                     <td><span className="badge badge-blue">{evt.category}</span></td>
                     <td><StatusBadge status={evt.status} /></td>

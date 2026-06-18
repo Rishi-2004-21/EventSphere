@@ -1,4 +1,4 @@
-# EventSphere Backend — Render Deployment Guide
+# Tixque Backend — Render Deployment Guide
 
 ## What this server does
 
@@ -27,12 +27,12 @@ Go to → https://render.com → Sign up with GitHub
 
 ### Step 3 — Create a Web Service
 1. Click **New +** → **Web Service**
-2. Connect your GitHub repo: `Rishi-2004-21/EventSphere`
+2. Connect your GitHub repo: `Rishi-2004-21/Tixque`
 3. Fill in:
 
 | Setting | Value |
 |---------|-------|
-| **Name** | `eventsphere-backend` |
+| **Name** | `tixque-backend` |
 | **Root Directory** | `server` |
 | **Runtime** | `Node` |
 | **Build Command** | `npm install` |
@@ -55,17 +55,17 @@ RESEND_API_KEY=re_...
 
 ### Step 5 — Get your Render URL
 After deploy, Render gives you:
-`https://eventsphere-backend.onrender.com`
+`https://tixque-backend.onrender.com`
 
 ### Step 6 — Add backend URL to Vercel
 In Vercel → your project → **Settings → Environment Variables**:
 ```
-VITE_BACKEND_URL=https://eventsphere-backend.onrender.com
+VITE_BACKEND_URL=https://tixque-backend.onrender.com
 ```
 
 ### Step 7 — Set up Razorpay Webhook (for payments)
 1. Go to Razorpay Dashboard → Settings → Webhooks
-2. Add URL: `https://eventsphere-backend.onrender.com/api/payments/webhook`
+2. Add URL: `https://tixque-backend.onrender.com/api/payments/webhook`
 3. Select events: `payment.captured`, `payment.failed`, `refund.created`
 4. Copy the webhook secret → paste it in Render env as `RAZORPAY_WEBHOOK_SECRET`
 
@@ -73,9 +73,9 @@ VITE_BACKEND_URL=https://eventsphere-backend.onrender.com
 
 ## Test your server
 ```bash
-curl https://eventsphere-backend.onrender.com/api/health
+curl https://tixque-backend.onrender.com/api/health
 ```
-Should return: `{"status":"ok","service":"EventSphere Backend",...}`
+Should return: `{"status":"ok","service":"Tixque Backend",...}`
 
 ---
 

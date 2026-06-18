@@ -2,17 +2,20 @@ import { createContext, useContext, useReducer, useEffect } from 'react'
 
 const AuthContext = createContext(null)
 
+const initialTheme = localStorage.getItem('organizer_theme') || 'dark'
+
 const initialState = {
   auth: {
     currentUser: null,
     isLoggedIn: false
-  }
+  },
+  theme: initialTheme
 }
 
 function authReducer(state, action) {
   switch (action.type) {
     case 'LOGIN':
-      sessionStorage.setItem('eventsphere_user', JSON.stringify(action.payload))
+      sessionStorage.setItem('tixque_user', JSON.stringify(action.payload))
       return {
         ...state,
         auth: {
@@ -21,7 +24,7 @@ function authReducer(state, action) {
         }
       }
     case 'LOGOUT':
-      sessionStorage.removeItem('eventsphere_user')
+      sessionStorage.removeItem('tixque_user')
       return {
         ...state,
         auth: {
@@ -31,7 +34,7 @@ function authReducer(state, action) {
       }
     case 'UPDATE_USER':
       const updatedUser = { ...state.auth.currentUser, ...action.payload }
-      sessionStorage.setItem('eventsphere_user', JSON.stringify(updatedUser))
+      sessionStorage.setItem('tixque_user', JSON.stringify(updatedUser))
       return {
         ...state,
         auth: {
@@ -47,6 +50,13 @@ function authReducer(state, action) {
           isLoggedIn: true
         }
       }
+    case 'TOGGLE_THEME':
+      const newTheme = state.theme === 'dark' ? 'light' : 'dark'
+      localStorage.setItem('organizer_theme', newTheme)
+      return {
+        ...state,
+        theme: newTheme
+      }
     default:
       return state
   }
@@ -56,13 +66,13 @@ export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
   useEffect(() => {
-    const saved = sessionStorage.getItem('eventsphere_user')
+    const saved = sessionStorage.getItem('tixque_user')
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
         dispatch({ type: 'INIT', payload: parsed })
       } catch (e) {
-        sessionStorage.removeItem('eventsphere_user')
+        sessionStorage.removeItem('tixque_user')
       }
     }
   }, [])
@@ -79,12 +89,18 @@ export function AuthProvider({ children }) {
     dispatch({ type: 'UPDATE_USER', payload: updates })
   }
 
+  function toggleTheme() {
+    dispatch({ type: 'TOGGLE_THEME' })
+  }
+
   const value = {
     currentUser: state.auth.currentUser,
     isLoggedIn: state.auth.isLoggedIn,
+    theme: state.theme,
     login,
     logout,
-    updateUser
+    updateUser,
+    toggleTheme
   }
 
   return (

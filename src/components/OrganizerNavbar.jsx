@@ -15,7 +15,7 @@ export default function OrganizerNavbar() {
   return (
     <nav className="navbar">
       <div className="navbar-inner">
-        <span className="navbar-logo">EventSphere</span>
+        <span className="navbar-logo">Tixque</span>
         <div className="navbar-links">
           <NavLink to="/organizer" end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
           <NavLink to="/organizer/create" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Create Event</NavLink>

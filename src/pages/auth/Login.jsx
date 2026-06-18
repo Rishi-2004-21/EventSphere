@@ -36,9 +36,9 @@ export default function Login() {
 
   // Demo credentials matching Supabase seed data
   const demoLogins = [
-    { label: 'Attendee', email: 'rishi@eventsphere.com', password: 'attendee123', color: '#10b981' },
-    { label: 'Organizer', email: 'priya@eventsphere.com', password: 'organizer123', color: '#6366f1' },
-    { label: 'Admin', email: 'admin@eventsphere.com', password: 'admin123', color: '#f59e0b' },
+    { label: 'Attendee', email: 'rishi@tixque.com', password: 'attendee123', color: '#10b981' },
+    { label: 'Organizer', email: 'priya@tixque.com', password: 'organizer123', color: '#6366f1' },
+    { label: 'Admin', email: 'admin@tixque.com', password: 'admin123', color: '#f59e0b' },
   ];
 
   return (
@@ -48,7 +48,7 @@ export default function Login() {
         {/* Logo */}
         <div className="auth-logo">
           <div className="logo-icon"><Zap size={20} fill="currentColor" /></div>
-          <span className="logo-text">EventSphere</span>
+          <span className="logo-text">Tixque</span>
         </div>
 
         <h1 className="auth-title">Welcome back</h1>

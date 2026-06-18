@@ -12,7 +12,7 @@ const initialState = {
 function authReducer(state, action) {
   switch (action.type) {
     case 'LOGIN':
-      sessionStorage.setItem('eventsphere_user', JSON.stringify(action.payload))
+      sessionStorage.setItem('tixque_user', JSON.stringify(action.payload))
       return {
         ...state,
         auth: {
@@ -21,7 +21,7 @@ function authReducer(state, action) {
         }
       }
     case 'LOGOUT':
-      sessionStorage.removeItem('eventsphere_user')
+      sessionStorage.removeItem('tixque_user')
       return {
         ...state,
         auth: {
@@ -31,7 +31,7 @@ function authReducer(state, action) {
       }
     case 'UPDATE_USER':
       const updatedUser = { ...state.auth.currentUser, ...action.payload }
-      sessionStorage.setItem('eventsphere_user', JSON.stringify(updatedUser))
+      sessionStorage.setItem('tixque_user', JSON.stringify(updatedUser))
       return {
         ...state,
         auth: {
@@ -56,13 +56,13 @@ export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
   useEffect(() => {
-    const saved = sessionStorage.getItem('eventsphere_user')
+    const saved = sessionStorage.getItem('tixque_user')
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
         dispatch({ type: 'INIT', payload: parsed })
       } catch (e) {
-        sessionStorage.removeItem('eventsphere_user')
+        sessionStorage.removeItem('tixque_user')
       }
     }
   }, [])

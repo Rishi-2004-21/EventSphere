@@ -16,7 +16,7 @@ export default function AdminNavbar() {
     <nav className="navbar">
       <div className="navbar-inner">
         <span className="navbar-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-          <Shield size={18} /> EventSphere
+          <Shield size={18} /> Tixque
         </span>
         <div className="navbar-links">
           <NavLink to="/admin" end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>

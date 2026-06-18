@@ -76,7 +76,7 @@ serve(async (req) => {
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#7c3aed,#0d9488);border-radius:16px 16px 0 0;padding:32px;text-align:center;">
-              <div style="font-size:26px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;">⚡ EventSphere</div>
+              <div style="font-size:26px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;">⚡ Tixque</div>
               <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:6px;">Your event discovery platform</div>
             </td>
           </tr>
@@ -120,13 +120,13 @@ serve(async (req) => {
 
               <!-- CTA Button -->
               <div style="text-align:center;margin-bottom:28px;">
-                <a href="https://eventsphere.app/discover" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:10px;font-weight:700;font-size:15px;letter-spacing:0.02em;">
+                <a href="https://tixque.app/discover" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:10px;font-weight:700;font-size:15px;letter-spacing:0.02em;">
                   🎫 View Event
                 </a>
               </div>
 
               <p style="color:#475569;font-size:13px;line-height:1.6;margin:0;">
-                You're receiving this because you previously booked an event hosted by <strong>${organizer_name}</strong> on EventSphere.
+                You're receiving this because you previously booked an event hosted by <strong>${organizer_name}</strong> on Tixque.
               </p>
             </td>
           </tr>
@@ -135,7 +135,7 @@ serve(async (req) => {
           <tr>
             <td style="background:#0f172a;border-radius:0 0 16px 16px;padding:20px 32px;text-align:center;border-top:1px solid #1e293b;">
               <p style="color:#334155;font-size:12px;margin:0;">
-                © 2025 EventSphere · <a href="#" style="color:#4f46e5;">Unsubscribe</a>
+                © 2025 Tixque · <a href="#" style="color:#4f46e5;">Unsubscribe</a>
               </p>
             </td>
           </tr>
@@ -155,7 +155,7 @@ serve(async (req) => {
           Authorization: `Bearer ${RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: "EventSphere <onboarding@resend.dev>",
+          from: "Tixque <onboarding@resend.dev>",
           to: attendee.email,
           subject: `${organizer_name} is hosting a new event you might love 🎉`,
           html: htmlBody,

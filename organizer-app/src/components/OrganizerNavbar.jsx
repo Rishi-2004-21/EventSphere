@@ -1,10 +1,10 @@
 import { useNavigate, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Bell, LogOut, Menu, X, User, ChevronDown, QrCode } from 'lucide-react'
+import { Bell, LogOut, Menu, X, User, ChevronDown, QrCode, Sun, Moon } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 export default function OrganizerNavbar() {
-  const { currentUser, logout } = useAuth()
+  const { currentUser, logout, theme, toggleTheme } = useAuth()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -39,7 +39,7 @@ export default function OrganizerNavbar() {
       <nav className="navbar">
         <div className="navbar-inner">
           <span className="navbar-logo" style={{ background: 'linear-gradient(135deg, #0891b2, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-            EventSphere
+            Tixque
           </span>
 
           {/* Desktop links */}
@@ -55,6 +55,24 @@ export default function OrganizerNavbar() {
           </div>
 
           <div className="navbar-right">
+            <button 
+              onClick={toggleTheme}
+              style={{
+                width: '36px', height: '36px', borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'none', border: 'none', cursor: 'pointer',
+                transition: 'background 0.2s'
+              }}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'none'}
+            >
+              {theme === 'dark' ? (
+                <Sun size={18} style={{ color: '#f59e0b' }} />
+              ) : (
+                <Moon size={18} style={{ color: '#0891b2' }} />
+              )}
+            </button>
             <Bell size={18} style={{ cursor: 'pointer', color: 'var(--text-muted)' }} />
 
             {/* User chip + dropdown (desktop) */}

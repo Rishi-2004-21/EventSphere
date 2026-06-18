@@ -120,7 +120,7 @@ export default function LandingPage() {
       {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
       <section className="section how-it-works">
         <div className="container">
-          <h2 className="section-title text-center">How EventSphere Works</h2>
+          <h2 className="section-title text-center">How Tixque Works</h2>
           <p className="section-sub text-center">Transparent, instant, and fair for everyone.</p>
           <div className="hiw-grid">
             {[
@@ -155,9 +155,9 @@ export default function LandingPage() {
         <div className="container">
           <div className="footer-logo">
             <Zap size={18} fill="currentColor" />
-            <span>EventSphere</span>
+            <span>Tixque</span>
           </div>
-          <p className="footer-copy">© 2025 EventSphere. Built with AI for India.</p>
+          <p className="footer-copy">© 2025 Tixque. Built with AI for India.</p>
         </div>
       </footer>
     </div>

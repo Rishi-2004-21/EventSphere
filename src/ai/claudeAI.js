@@ -28,7 +28,7 @@ async function callClaude({ systemPrompt, userMessage, maxTokens = 200 }) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
       'HTTP-Referer': window.location.origin,
-      'X-Title': 'EventSphere',
+      'X-Title': 'Tixque',
     },
     body: JSON.stringify(body),
   })
@@ -89,9 +89,9 @@ function getFallbackResponse(userMessage) {
     return { text: "Click the ❤️ heart icon on any event to add it to your **Wishlist**. You can view all saved events on your Profile page.", limited: true }
   }
   if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey') || msg.includes('help')) {
-    return { text: "Hi there! 👋 I'm your EventSphere assistant. I can help you **discover events**, **book tickets**, manage your **wishlist**, or navigate the app. What would you like to do?", limited: true }
+    return { text: "Hi there! 👋 I'm your Tixque assistant. I can help you **discover events**, **book tickets**, manage your **wishlist**, or navigate the app. What would you like to do?", limited: true }
   }
-  return { text: "I'm here to help you discover and book events on EventSphere. Try browsing the **Discover** page, or ask me about booking tickets, your wishlist, or your profile! 🎉", limited: true }
+  return { text: "I'm here to help you discover and book events on Tixque. Try browsing the **Discover** page, or ask me about booking tickets, your wishlist, or your profile! 🎉", limited: true }
 }
 
 export async function getAIChatResponse(userMessage, userRole = 'attendee', userName = '') {
@@ -116,8 +116,8 @@ export async function getAIChatResponse(userMessage, userRole = 'attendee', user
 
   try {
     const systemPrompt = userRole === 'organizer'
-      ? `You are EventSphere's helpful AI assistant for event organizers. You help organizers create events (5-step wizard: title/category → AI suggestions → date/venue/capacity → pricing → terms), understand the approval process (events reviewed by admin: pending, approved, changes-requested, or rejected), view bookings, manage wallet, and use AI features (AI description generator, AI category suggestions, AI insights panel). Keep all responses professional, concise, and under 100 words. The organizer's name is: ${userName || 'Organizer'}.`
-      : `You are EventSphere's helpful AI assistant for event attendees. You help users discover events, book tickets (browse → click event → read T&C → proceed to checkout → get QR ticket), manage bookings on the My Tickets page, and use the wishlist. You must NEVER mention, reveal, calculate, or discuss ticket prices, event costs, fees, organizer earnings, revenue splits, platform fees, payment breakdowns, percentages, wallet amounts, or any financial figures whatsoever. If asked anything related to money, fees, costs or pricing — respond with: "To see the ticket price for any event, please visit the Event Detail page." Keep all responses friendly, concise, and under 100 words. The attendee's name is: ${userName || 'there'}.`
+      ? `You are Tixque's helpful AI assistant for event organizers. You help organizers create events (5-step wizard: title/category → AI suggestions → date/venue/capacity → pricing → terms), understand the approval process (events reviewed by admin: pending, approved, changes-requested, or rejected), view bookings, manage wallet, and use AI features (AI description generator, AI category suggestions, AI insights panel). Keep all responses professional, concise, and under 100 words. The organizer's name is: ${userName || 'Organizer'}.`
+      : `You are Tixque's helpful AI assistant for event attendees. You help users discover events, book tickets (browse → click event → read T&C → proceed to checkout → get QR ticket), manage bookings on the My Tickets page, and use the wishlist. You must NEVER mention, reveal, calculate, or discuss ticket prices, event costs, fees, organizer earnings, revenue splits, platform fees, payment breakdowns, percentages, wallet amounts, or any financial figures whatsoever. If asked anything related to money, fees, costs or pricing — respond with: "To see the ticket price for any event, please visit the Event Detail page." Keep all responses friendly, concise, and under 100 words. The attendee's name is: ${userName || 'there'}.`
     return await callClaude({ systemPrompt, userMessage, maxTokens: 200 })
   } catch (err) {
     console.error('getAIChatResponse error:', err)

@@ -28,7 +28,7 @@ export default function TicketScanner() {
   /* ── verify helpers ─────────────────────────────────────────────── */
 
   async function verifyQrText(rawText) {
-    // 1. Try to parse as EventSphere structured JSON
+    // 1. Try to parse as Tixque structured JSON
     let parsed
     try {
       parsed = JSON.parse(rawText)
@@ -204,7 +204,7 @@ export default function TicketScanner() {
           <XCircle size={52} color="#ef4444" style={{ margin: '0 auto 0.75rem', display: 'block' }} />
           <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ef4444', marginBottom: '0.35rem' }}>Invalid QR Code</div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-            This is not an EventSphere ticket. Please ask the attendee to open the My Tickets page.
+            This is not an Tixque ticket. Please ask the attendee to open the My Tickets page.
           </p>
           <button onClick={resetAll} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: '#ef4444', border: 'none', borderRadius: 8, padding: '0.6rem 1.25rem', color: 'white', fontWeight: 700, cursor: 'pointer' }}>
             <RotateCcw size={14} /> Try Again

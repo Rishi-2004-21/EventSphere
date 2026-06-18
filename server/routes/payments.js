@@ -90,7 +90,7 @@ router.post('/verify', (req, res) => {
  * The body must be raw bytes for signature verification.
  *
  * In Razorpay Dashboard → Settings → Webhooks → add your Render URL:
- *   https://eventsphere-backend.onrender.com/api/payments/webhook
+ *   https://tixque-backend.onrender.com/api/payments/webhook
  */
 router.post('/webhook', (req, res) => {
   try {

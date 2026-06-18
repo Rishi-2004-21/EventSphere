@@ -23,7 +23,7 @@ function ProtectedRoute({ children }) {
 }
 
 function AppInner() {
-  const { currentUser } = useAuth()
+  const { currentUser, theme } = useAuth()
   const isLoggedIn = currentUser?.role === 'organizer'
 
   useEffect(() => {
@@ -37,6 +37,12 @@ function AppInner() {
     }
     testConnection()
   }, [])
+
+  useEffect(() => {
+    if (theme) {
+      document.body.setAttribute('data-theme', theme)
+    }
+  }, [theme])
 
   return (
     <BrowserRouter>

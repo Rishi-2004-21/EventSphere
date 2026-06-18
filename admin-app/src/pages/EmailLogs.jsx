@@ -45,7 +45,7 @@ export default function EmailLogs() {
           <Mail size={22} style={{ color: '#a855f7' }} />
           <h1 className="page-title" style={{ margin: 0 }}>Email Logs</h1>
         </div>
-        <p className="page-subtitle">Audit trail of all automated reminder emails sent through EventSphere</p>
+        <p className="page-subtitle">Audit trail of all automated reminder emails sent through Tixque</p>
       </div>
 
       {/* Summary Card */}

@@ -28,7 +28,7 @@ async function callClaude({ systemPrompt, userMessage, maxTokens = 200 }) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
       'HTTP-Referer': window.location.origin,
-      'X-Title': 'EventSphere',
+      'X-Title': 'Tixque',
     },
     body: JSON.stringify(body),
   })
@@ -84,7 +84,7 @@ export async function getAIPlatformInsights({ totalRev, activeEvents, totalUsers
 
 export async function getAIChatResponse(userMessage, userRole = 'attendee') {
   try {
-    const systemPrompt = `You are EventSphere's helpful AI assistant. Answer questions about events, booking, and the platform. Keep responses concise. The user's role is: ${userRole}.`
+    const systemPrompt = `You are Tixque's helpful AI assistant. Answer questions about events, booking, and the platform. Keep responses concise. The user's role is: ${userRole}.`
     return await callClaude({ systemPrompt, userMessage, maxTokens: 200 })
   } catch (err) {
     console.error('getAIChatResponse error:', err)

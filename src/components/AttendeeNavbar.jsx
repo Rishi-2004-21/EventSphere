@@ -81,7 +81,7 @@ export default function AttendeeNavbar() {
     <>
       <nav className="navbar">
         <div className="navbar-inner">
-          <span className="navbar-logo gradient-text">EventSphere</span>
+          <span className="navbar-logo gradient-text">Tixque</span>
 
           {/* Desktop nav links */}
           <div className="navbar-links navbar-links-desktop">

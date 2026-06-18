@@ -37,7 +37,7 @@ export default function AdminNavbar() {
       <nav className="navbar">
         <div className="navbar-inner">
           <span className="navbar-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'linear-gradient(135deg, #e11d48, #fb7185)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-            <Shield size={18} style={{ WebkitTextFillColor: 'initial', color: '#e11d48' }} /> EventSphere
+            <Shield size={18} style={{ WebkitTextFillColor: 'initial', color: '#e11d48' }} /> Tixque
           </span>
 
           {/* Desktop links */}

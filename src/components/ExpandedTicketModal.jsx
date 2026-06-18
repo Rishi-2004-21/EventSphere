@@ -33,7 +33,7 @@ export default function ExpandedTicketModal({ booking, event, onClose }) {
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.href = dataUrl;
-      link.download = `EventSphere-Ticket-${booking.id}.png`;
+      link.download = `Tixque-Ticket-${booking.id}.png`;
       link.click();
       toast.success('Ticket downloaded!', { id: toastId });
     } catch (err) {
@@ -44,7 +44,7 @@ export default function ExpandedTicketModal({ booking, event, onClose }) {
 
   const handleShare = async () => {
     const shareData = {
-      title: 'My EventSphere Ticket',
+      title: 'My Tixque Ticket',
       text: `I am going to ${eventTitle} on ${formatDateReadable(eventDate)}!`,
       url: window.location.href,
     };

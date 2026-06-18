@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'EventSphere Backend',
+    service: 'Tixque Backend',
     timestamp: new Date().toISOString(),
     uptime: `${Math.floor(process.uptime())}s`,
     env: {

@@ -185,7 +185,7 @@ export default function Profile() {
           <SlidersHorizontal size={16} style={{ color: 'var(--purple)' }} /> Recommendation Preferences
         </h2>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-          Control how EventSphere personalizes your discovery feed
+          Control how Tixque personalizes your discovery feed
         </p>
 
         {[
@@ -332,7 +332,7 @@ export default function Profile() {
           Notification Preferences
         </h2>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-          Control which automated emails you receive from EventSphere
+          Control which automated emails you receive from Tixque
         </p>
 
         <div style={{

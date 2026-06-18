@@ -28,10 +28,10 @@ function matchOrganizerKeyword(msg) {
     return `Your Wallet 💳\n\nAll earnings are credited **instantly** to your wallet when a ticket is sold!\n\n• Visit the **Wallet** page from the navbar\n• See your total balance and transaction history\n• Every transaction shows the event, amount, and timestamp\n\nWithdrawals can be processed to your bank account from the Wallet page.`
   }
   if (m.includes('ai') || m.includes('artificial intelligence') || m.includes('smart') || m.includes('description generator') || m.includes('insights')) {
-    return `AI Features on EventSphere 🤖\n\n**1. AI Description Generator** — In Step 1 of event creation, click "Generate with AI" to auto-create a compelling event description\n\n**2. AI Category Suggestions** — Step 2 shows AI-powered category fit scores for your event\n\n**3. AI Insights Panel** — On your Dashboard, get personalized marketing tips based on your event performance data!`
+    return `AI Features on Tixque 🤖\n\n**1. AI Description Generator** — In Step 1 of event creation, click "Generate with AI" to auto-create a compelling event description\n\n**2. AI Category Suggestions** — Step 2 shows AI-powered category fit scores for your event\n\n**3. AI Insights Panel** — On your Dashboard, get personalized marketing tips based on your event performance data!`
   }
   if (m.includes('hello') || m.includes('hi') || m.includes('hey') || m.includes('help')) {
-    return `Hello! I'm your EventSphere organizer assistant 👋\n\nI can help you:\n• 🎪 Create events step-by-step\n• 📋 Understand the approval process\n• 💰 Track earnings and wallet\n• 🤖 Use AI features effectively\n\nWhat would you like to know?`
+    return `Hello! I'm your Tixque organizer assistant 👋\n\nI can help you:\n• 🎪 Create events step-by-step\n• 📋 Understand the approval process\n• 💰 Track earnings and wallet\n• 🤖 Use AI features effectively\n\nWhat would you like to know?`
   }
   return null
 }
@@ -48,7 +48,7 @@ export default function ChatBot() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      text: `Hi ${userName}! 👋 I'm your EventSphere organizer assistant.\n\nI can help you create events, understand the approval process, track your earnings, and use AI features. What would you like to know?`,
+      text: `Hi ${userName}! 👋 I'm your Tixque organizer assistant.\n\nI can help you create events, understand the approval process, track your earnings, and use AI features. What would you like to know?`,
       time: new Date(),
     },
   ])
@@ -132,7 +132,7 @@ export default function ChatBot() {
               <Sparkles size={14} />
             </div>
             <div>
-              <div className="chatbot-header-title">EventSphere AI Assistant</div>
+              <div className="chatbot-header-title">Tixque AI Assistant</div>
               <div className="chatbot-online-status">
                 <span className="chatbot-online-dot" />
                 Online

@@ -77,7 +77,7 @@ export default function OrganizerLogin() {
     <div className="auth-page">
       <div className="auth-bg-glow" />
       <div className="auth-card">
-        <div className="auth-logo-text">EventSphere</div>
+        <div className="auth-logo-text">Tixque</div>
         <div className="auth-portal-label">Organizer Portal</div>
 
         <div className="auth-heading">Welcome Back Organizer</div>

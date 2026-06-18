@@ -41,7 +41,7 @@ app.use('/api/email', emailRouter);
 // ── Root ─────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({
-    service: 'EventSphere Backend API',
+    service: 'Tixque Backend API',
     version: '1.0.0',
     status: 'running',
     endpoints: [
@@ -62,7 +62,7 @@ app.use((err, req, res, next) => {
 
 // ── Start ─────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`✅ EventSphere Backend running on port ${PORT}`);
+  console.log(`✅ Tixque Backend running on port ${PORT}`);
   console.log(`   Supabase URL: ${process.env.SUPABASE_URL ? '✅ Set' : '❌ Missing'}`);
   console.log(`   Razorpay Key: ${process.env.RAZORPAY_KEY_ID ? '✅ Set' : '❌ Missing'}`);
   console.log(`   Resend Key:   ${process.env.RESEND_API_KEY ? '✅ Set' : '❌ Missing'}`);

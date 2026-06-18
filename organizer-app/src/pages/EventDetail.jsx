@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
-import { ArrowLeft, Calendar, MapPin, Users, Ticket, TrendingUp, DollarSign, Eye } from 'lucide-react'
+import { ArrowLeft, Calendar, MapPin, Users, Ticket, TrendingUp, DollarSign, Eye, ToggleLeft, ToggleRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 function formatCurrency(n) { return `₹${Number(n || 0).toLocaleString('en-IN')}` }
@@ -56,6 +56,17 @@ export default function OrganizerEventDetail() {
   const totalRevenue = bookings.reduce((s, b) => s + (Number(b.organizer_received) || 0), 0)
   const totalFees = bookings.reduce((s, b) => s + (Number(b.platform_fee) || 0), 0)
   const capacityPct = event.capacity ? Math.round(((event.tickets_sold || 0) / event.capacity) * 100) : 0
+
+  async function toggleManualEarlyBird() {
+    const newType = event.early_bird_limit_type === 'manual' ? 'manual_off' : 'manual'
+    const { error } = await supabase.from('events').update({ early_bird_limit_type: newType }).eq('id', event.id)
+    if (error) {
+      toast.error('Failed to update early bird pricing')
+    } else {
+      setEvent({ ...event, early_bird_limit_type: newType })
+      toast.success(newType === 'manual' ? 'Early Bird is now Active' : 'Early Bird is now Disabled')
+    }
+  }
 
   return (
     <div className="page-wrapper">
@@ -154,6 +165,29 @@ export default function OrganizerEventDetail() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.7, marginTop: '1rem' }}>
             {event.description}
           </p>
+        )}
+        
+        {(event.early_bird_limit_type === 'manual' || event.early_bird_limit_type === 'manual_off') && (
+          <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>Manual Early Bird Control</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Toggle early bird pricing on or off for attendees.</div>
+            </div>
+            <button 
+              onClick={toggleManualEarlyBird}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.5rem 1rem', borderRadius: '8px',
+                background: event.early_bird_limit_type === 'manual' ? 'var(--teal-dim)' : 'transparent',
+                color: event.early_bird_limit_type === 'manual' ? 'var(--teal)' : 'var(--text-muted)',
+                border: `1px solid ${event.early_bird_limit_type === 'manual' ? 'var(--teal)' : 'var(--border)'}`,
+                cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s'
+              }}
+            >
+              {event.early_bird_limit_type === 'manual' ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+              {event.early_bird_limit_type === 'manual' ? 'Early Bird Active' : 'Standard Price Active'}
+            </button>
+          </div>
         )}
       </div>
 

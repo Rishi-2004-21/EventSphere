@@ -157,6 +157,30 @@ export default function EventDetail() {
 
 
 
+  let activePrice = event.price
+  let isEarlyBirdActive = false
+
+  if (event.pricing_type === 'tiered') {
+    if (event.early_bird_limit_type === 'date') {
+      const today = new Date().toISOString().split('T')[0]
+      if (today <= event.early_bird_end_date) {
+        isEarlyBirdActive = true
+      } else {
+        activePrice = event.tier2_price || event.price
+      }
+    } else if (event.early_bird_limit_type === 'people') {
+      if ((event.early_bird_sold || 0) < (event.early_bird_limit_people || 0)) {
+        isEarlyBirdActive = true
+      } else {
+        activePrice = event.tier2_price || event.price
+      }
+    } else if (event.early_bird_limit_type === 'manual') {
+      isEarlyBirdActive = true
+    } else if (event.early_bird_limit_type === 'manual_off') {
+      activePrice = event.tier2_price || event.price
+    }
+  }
+
   return (
     <div className="page-wrapper">
       <button className="btn-ghost" onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>
@@ -189,7 +213,7 @@ export default function EventDetail() {
             <span className="info-chip"><MapPin size={13} />{event.venue}, {event.city}</span>
           </div>
 
-          <PaymentBreakdown price={event.price} />
+          <PaymentBreakdown price={activePrice} />
 
           <div style={{ marginTop: '0.75rem' }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>About this event</h3>
@@ -202,10 +226,11 @@ export default function EventDetail() {
         <div style={{ marginTop: '1.5rem' }}>
           <div className="card" style={{ position: 'sticky', top: '80px' }}>
             <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--purple)', marginBottom: '0.25rem' }}>
-              {formatCurrency(event.price)}
+              {formatCurrency(activePrice)}
             </div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
               per ticket
+              {isEarlyBirdActive && <span style={{ marginLeft: '0.5rem', color: 'var(--teal)', fontWeight: 600, fontSize: '0.75rem', background: 'var(--teal-dim)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>Early Bird Active</span>}
             </div>
 
             <button

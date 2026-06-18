@@ -90,7 +90,7 @@ export default function BecomeOrganizerPopup() {
 
             <div style={{ color: '#94a3b8', fontSize: '0.875rem', lineHeight: 1.7, marginBottom: '1.25rem' }}>
               <p style={{ margin: '0 0 0.75rem' }}>
-                As an <strong style={{ color: '#f0f4ff' }}>EventSphere Organizer</strong>, you can:
+                As an <strong style={{ color: '#f0f4ff' }}>Tixque Organizer</strong>, you can:
               </p>
               <ul style={{ margin: 0, padding: '0 0 0 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 <li>Create and publish your own events</li>
@@ -173,7 +173,7 @@ export default function BecomeOrganizerPopup() {
             color: '#f0f4ff', fontWeight: 800, fontSize: '0.95rem',
             lineHeight: 1.3, margin: '0 0 0.5rem',
           }}>
-            Host Your Own Events on EventSphere
+            Host Your Own Events on Tixque
           </h3>
 
           {/* Body */}

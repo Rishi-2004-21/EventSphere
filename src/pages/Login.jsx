@@ -54,9 +54,9 @@ export default function Login() {
       login(data) // Updates AuthContext
       
       // Update AppContext so route guards work instantly
-      const storedUser = JSON.parse(localStorage.getItem('eventsphere_user') || 'null')
+      const storedUser = JSON.parse(localStorage.getItem('tixque_user') || 'null')
       if (!storedUser) {
-        localStorage.setItem('eventsphere_user', JSON.stringify(data))
+        localStorage.setItem('tixque_user', JSON.stringify(data))
       }
       // Force AppContext reload hack: not needed if we just redirect, wait...
       // AttendeeRoute reads from AppContext. Since we don't have dispatch from AppContext,
@@ -82,7 +82,7 @@ export default function Login() {
     <div className="auth-page">
       <div className="auth-bg-glow" />
       <div className="auth-card">
-        <div className="auth-logo-text">EventSphere</div>
+        <div className="auth-logo-text">Tixque</div>
         <div className="auth-portal-label">Attendee Portal</div>
 
         <div className="auth-heading">Welcome Back</div>
@@ -129,7 +129,7 @@ export default function Login() {
         </div>
 
         <p className="auth-footer-text">
-          New to EventSphere?{' '}
+          New to Tixque?{' '}
           <Link to="/register" className="auth-footer-link">Create an account</Link>
         </p>
       </div>

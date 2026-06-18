@@ -35,31 +35,28 @@ export default function OrganizerRegister() {
     setLoading(true)
 
     try {
-      // Fetch all existing rows for this email (multiple roles possible)
-      const { data: existingRows } = await supabase
+      // Check if an organizer account already exists with this exact email + role combination
+      const { data: existingOrganizer, error: checkError } = await supabase
         .from('users')
-        .select('id, role')
+        .select('id')
         .eq('email', form.email.trim().toLowerCase())
+        .eq('role', 'organizer')
+        .maybeSingle()
 
-      if (existingRows && existingRows.length > 0) {
-        const existingAdmin = existingRows.find(u => u.role === 'admin')
-        const existingOrganizer = existingRows.find(u => u.role === 'organizer')
-
-        if (existingAdmin) {
-          setInlineErrors({ email: 'this email is reserved' })
-          setLoading(false)
-          return
-        }
-
-        if (existingOrganizer) {
-          setInlineErrors({ email: 'an organizer account with this email already exists. please sign in instead.' })
-          setLoading(false)
-          return
-        }
-
-        // Existing attendee — allowed to also register as organizer with a different password
-        toast.success('Creating your organizer account alongside your existing attendee account…', { duration: 2000 })
+      if (checkError) {
+        console.error(checkError)
+        toast.error('registration failed. please try again.')
+        setLoading(false)
+        return
       }
+
+      if (existingOrganizer) {
+        setInlineErrors({ email: 'an organizer account with this email already exists. please sign in instead.' })
+        setLoading(false)
+        return
+      }
+
+      // No organizer row found — safe to proceed (attendee-only accounts are allowed)
 
       const newUser = {
         id: nanoid(),
@@ -111,7 +108,7 @@ export default function OrganizerRegister() {
             <CheckCircle size={30} style={{ color: 'var(--teal)' }} />
           </div>
 
-          <div className="auth-logo-text">EventSphere</div>
+          <div className="auth-logo-text">Tixque</div>
           <div style={{ fontSize: '1.35rem', fontWeight: 800, margin: '0.75rem 0 0.5rem', color: 'var(--text-primary)' }}>
             Application Submitted!
           </div>
@@ -140,7 +137,7 @@ export default function OrganizerRegister() {
     <div className="auth-page">
       <div className="auth-bg-glow" />
       <div className="auth-card">
-        <div className="auth-logo-text">EventSphere</div>
+        <div className="auth-logo-text">Tixque</div>
         <div className="auth-portal-label">Organizer Portal</div>
 
         <div className="auth-heading">Become an Organizer</div>

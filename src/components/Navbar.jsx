@@ -55,7 +55,7 @@ export default function Navbar() {
           <div className="logo-icon">
             <Zap size={18} fill="currentColor" />
           </div>
-          <span className="logo-text">EventSphere</span>
+          <span className="logo-text">Tixque</span>
         </Link>
 
         {/* Nav Links */}

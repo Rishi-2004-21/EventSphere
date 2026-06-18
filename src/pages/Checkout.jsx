@@ -24,7 +24,7 @@ const FALLBACK_UPI_ID = import.meta.env.VITE_UPI_ID || '8125432020@pthdfc'
    Pass paymentId = '' for free tickets.
    Throws on insert error so caller can handle it.
 ══════════════════════════════════════════════════════════════ */
-async function createBookingRecord(event, currentUser, paymentId = '') {
+async function createBookingRecord(event, currentUser, paymentId = '', isEarlyBirdActive = false) {
   const bookingId = `ES-${nanoid(8).toUpperCase()}`
 
   // Structured QR payload — scannable by the organizer portal
@@ -41,7 +41,7 @@ async function createBookingRecord(event, currentUser, paymentId = '') {
     payment_status: 'confirmed',
     upi_transaction_id: paymentId || null,
     verified: false,
-    platform: 'EventSphere',
+    platform: 'Tixque',
   })
 
   const rawPrice = Number(event.price) || 0
@@ -91,6 +91,13 @@ async function createBookingRecord(event, currentUser, paymentId = '') {
         booking_count: (event.booking_count || 0) + 1,
       })
       .eq('id', event.id)
+      
+    if (isEarlyBirdActive && event.early_bird_limit_type === 'people') {
+      await supabase
+        .from('events')
+        .update({ early_bird_sold: (event.early_bird_sold || 0) + 1 })
+        .eq('id', event.id)
+    }
   } catch (e) { console.warn('tickets_sold update failed:', e) }
 
   // Update organizer wallet (non-critical)
@@ -145,7 +152,7 @@ async function createBookingRecord(event, currentUser, paymentId = '') {
         event_venue: event.venue,
         event_city: event.city,
         booking_id: bookingId,
-        organizer_name: event.organizer_name || 'EventSphere',
+        organizer_name: event.organizer_name || 'Tixque',
         amount_paid: amountPaid,
         ticket_qr_code: ticketQrCode,
       },
@@ -285,11 +292,11 @@ export default function Checkout() {
     })
   }
 
-  async function handleClaimFreeTicket() {
+  async function handleClaimFreeTicket(isEarlyBirdActive) {
     if (!event || !currentUser) return
     setProcessing(true)
     try {
-      const bookingId = await createBookingRecord(event, currentUser, '')
+      const bookingId = await createBookingRecord(activeEvent, currentUser, '', isEarlyBirdActive)
       toast.success('🎟️ Your free ticket has been claimed!')
       setSuccessData({ bookingId, amountPaid: 0 })
     } catch (err) {
@@ -299,12 +306,12 @@ export default function Checkout() {
     }
   }
 
-  async function handleConfirmPayment() {
+  async function handleConfirmPayment(isEarlyBirdActive) {
     if (!event || !currentUser) return
     setShowConfirmModal(false)
     setProcessing(true)
     try {
-      const bookingId = await createBookingRecord(event, currentUser, transactionId.trim())
+      const bookingId = await createBookingRecord(activeEvent, currentUser, transactionId.trim(), isEarlyBirdActive)
       toast.success('🎉 Booking confirmed! Check your email for ticket details.')
       setSuccessData({ bookingId, amountPaid: Number(event.price) })
     } catch (err) {
@@ -321,7 +328,34 @@ export default function Checkout() {
     </div>
   )
 
-  const price = Number(event.price) || 0
+  let activePrice = event.price
+  let isEarlyBirdActive = false
+
+  if (event.pricing_type === 'tiered') {
+    if (event.early_bird_limit_type === 'date') {
+      const today = new Date().toISOString().split('T')[0]
+      if (today <= event.early_bird_end_date) {
+        isEarlyBirdActive = true
+      } else {
+        activePrice = event.tier2_price || event.price
+      }
+    } else if (event.early_bird_limit_type === 'people') {
+      if ((event.early_bird_sold || 0) < (event.early_bird_limit_people || 0)) {
+        isEarlyBirdActive = true
+      } else {
+        activePrice = event.tier2_price || event.price
+      }
+    } else if (event.early_bird_limit_type === 'manual') {
+      isEarlyBirdActive = true
+    } else if (event.early_bird_limit_type === 'manual_off') {
+      activePrice = event.tier2_price || event.price
+    }
+  }
+  
+  // Create an updated event copy so createBookingRecord uses the correct price
+  const activeEvent = { ...event, price: activePrice }
+
+  const price = Number(activePrice) || 0
   const isFreeEvent = price === 0 || event.pricing_type === 'free'
   const txnValid = transactionId.trim().length >= 8
 
@@ -408,7 +442,7 @@ export default function Checkout() {
                   id="claim-free-ticket-btn"
                   className="btn-purple"
                   style={{ width: '100%', fontSize: '1rem', padding: '0.9rem', gap: '0.6rem' }}
-                  onClick={handleClaimFreeTicket}
+                  onClick={() => handleClaimFreeTicket(isEarlyBirdActive)}
                   disabled={processing}
                 >
                   {processing ? <span className="btn-spinner" /> : <><Ticket size={18} /> Claim Free Ticket</>}
@@ -456,7 +490,7 @@ export default function Checkout() {
                   {/* Primary: Dynamic QR with amount pre-filled */}
                   <div style={{ display: 'inline-block', background: 'white', padding: 14, borderRadius: 12, boxShadow: '0 4px 24px rgba(0,0,0,0.35)' }}>
                     <QRCode
-                      value={`upi://pay?pa=${organizer?.upi_id}&pn=${encodeURIComponent(organizer?.name || 'Organizer')}&am=${price.toFixed(2)}&cu=INR&tn=EventSphere+Booking`}
+                      value={`upi://pay?pa=${organizer?.upi_id}&pn=${encodeURIComponent(organizer?.name || 'Organizer')}&am=${price.toFixed(2)}&cu=INR&tn=Tixque+Booking`}
                       size={220}
                       level="H"
                       fgColor="#0a0f1e"
@@ -635,7 +669,7 @@ export default function Checkout() {
               </button>
               <button
                 id="yes-i-have-paid-btn"
-                onClick={handleConfirmPayment}
+                onClick={() => handleConfirmPayment(isEarlyBirdActive)}
                 style={{
                   flex: 2, padding: '0.75rem', background: '#10b981',
                   border: 'none', borderRadius: 10, color: 'white',

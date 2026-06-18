@@ -114,7 +114,7 @@ export default function Checkout() {
             event_venue: event.venue,
             event_city: event.city,
             booking_id: bookingId.toUpperCase(),
-            organizer_name: event.organizerName || 'EventSphere',
+            organizer_name: event.organizerName || 'Tixque',
             amount_paid: event.price,
             ticket_qr_code: qrData,
           },

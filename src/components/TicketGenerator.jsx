@@ -71,7 +71,7 @@ export default function TicketGenerator({ booking, event }) {
         logging: false,
       })
       const link = document.createElement('a')
-      link.download = `EventSphere-Ticket-${booking?.id || 'ticket'}.png`
+      link.download = `Tixque-Ticket-${booking?.id || 'ticket'}.png`
       link.href = canvas.toDataURL('image/png')
       link.click()
     } catch (err) {
@@ -85,8 +85,8 @@ export default function TicketGenerator({ booking, event }) {
       if (navigator.share) {
         const canvas = await html2canvas(ticketRef.current, { scale: 2, useCORS: true })
         canvas.toBlob(async (blob) => {
-          const file = new File([blob], 'EventSphere-Ticket.png', { type: 'image/png' })
-          await navigator.share({ title: event?.title || 'My EventSphere Ticket', files: [file] })
+          const file = new File([blob], 'Tixque-Ticket.png', { type: 'image/png' })
+          await navigator.share({ title: event?.title || 'My Tixque Ticket', files: [file] })
         })
       } else {
         await navigator.clipboard.writeText(qrValue)
@@ -122,8 +122,8 @@ export default function TicketGenerator({ booking, event }) {
         <div className="ticket-header" style={{ background: gradient }}>
           <div className="ticket-header-top">
             <div>
-              <div className="ticket-brand-name">EventSphere</div>
-              <div className="ticket-brand-sub">Powered by EventSphere</div>
+              <div className="ticket-brand-name">Tixque</div>
+              <div className="ticket-brand-sub">Powered by Tixque</div>
             </div>
             <div className="ticket-category-pill">{category}</div>
           </div>

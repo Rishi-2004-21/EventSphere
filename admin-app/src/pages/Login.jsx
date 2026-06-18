@@ -68,7 +68,7 @@ export default function AdminLogin() {
     <div className="auth-page">
       <div className="auth-bg-glow" />
       <div className="auth-card">
-        <div className="auth-logo-text">EventSphere</div>
+        <div className="auth-logo-text">Tixque</div>
         <div className="auth-portal-label">Admin Portal</div>
 
         <div className="auth-heading">Administrator Access</div>
@@ -79,7 +79,7 @@ export default function AdminLogin() {
         <form onSubmit={handleSubmit} className="auth-form-stack">
           <div className="form-group">
             <label className="form-label">Admin Email</label>
-            <input id="login-email" type="email" className="form-input" placeholder="admin@eventsphere.com"
+            <input id="login-email" type="email" className="form-input" placeholder="admin@tixque.com"
               value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
           </div>
 

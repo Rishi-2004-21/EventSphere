@@ -7,7 +7,7 @@ import { categorizeEvent, detectSpam } from '../ai/aiModules'
 import { getAIEventDescription } from '../ai/claudeAI'
 import {
   Sparkles, CheckCircle, Gift, Tag, Layers, Upload, X, FileText,
-  Eye, ToggleLeft, ToggleRight, AlertTriangle, CloudUpload
+  Eye, ToggleLeft, ToggleRight, AlertTriangle, CloudUpload, Clock, Calendar, Users, Settings
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import TimePicker12Hour from '../components/TimePicker12Hour'
@@ -28,10 +28,10 @@ SECTION 3 — TRANSPORTATION AND PERSONAL RESPONSIBILITY
 The event organiser and venue are not responsible for any travel-related issues, accidents, or incidents outside the venue premises.
 
 SECTION 4 — PERSONAL BELONGINGS
-Attendees are fully responsible for the safety and security of their personal belongings. The organiser and EventSphere shall not be liable for loss, theft, or damage of personal property.
+Attendees are fully responsible for the safety and security of their personal belongings. The organiser and Tixque shall not be liable for loss, theft, or damage of personal property.
 
 SECTION 5 — HEALTH AND SAFETY
-Participation is at the attendee's own risk and discretion. The organiser and EventSphere shall not be held liable for injuries, health incidents, or medical emergencies during the event.
+Participation is at the attendee's own risk and discretion. The organiser and Tixque shall not be held liable for injuries, health incidents, or medical emergencies during the event.
 
 SECTION 6 — VENUE RULES
 All attendees must adhere to venue rules. Failure to comply may result in removal from the premises without a refund.
@@ -46,7 +46,7 @@ SECTION 9 — EVENT CHANGES
 The organiser reserves the right to make changes to the event schedule, venue, or programme at any time.
 
 SECTION 10 — ACCEPTANCE OF TERMS
-By booking a ticket through EventSphere, you confirm that you have read and agreed to all terms and conditions stated above.`
+By booking a ticket through Tixque, you confirm that you have read and agreed to all terms and conditions stated above.`
 
 export default function CreateEvent() {
   const { currentUser } = useAuth()
@@ -69,6 +69,7 @@ export default function CreateEvent() {
     title: '', category: 'Tech', description: '',
     date: '', time: '', venue: '', city: 'Mumbai', capacity: '',
     pricingType: 'fixed', price: '', earlyBirdPrice: '', standardPrice: '',
+    earlyBirdLimitType: 'date', earlyBirdEndDate: '', earlyBirdLimitPeople: '',
     useDefaultTerms: true,
     customTerms: '',
   })
@@ -236,6 +237,13 @@ export default function CreateEvent() {
       ai_confidence: aiCategories[0]?.confidence || 0,
       trending: 'Steady',
       booking_count: 0,
+      tier1_price: Number(form.earlyBirdPrice) || 0,
+      tier2_price: Number(form.standardPrice) || 0,
+      early_bird_limit_type: form.earlyBirdLimitType,
+      early_bird_limit_days: 0,
+      early_bird_limit_people: Number(form.earlyBirdLimitPeople) || 0,
+      early_bird_end_date: form.earlyBirdEndDate,
+      early_bird_sold: 0,
       terms_and_conditions: termsText,
       has_custom_terms: !form.useDefaultTerms && form.customTerms.trim().length > 0,
     }
@@ -639,6 +647,88 @@ export default function CreateEvent() {
             </div>
           )}
 
+          {form.pricingType === 'tiered' && (
+            <div style={{ marginTop: '2rem' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1rem' }}>
+                <Clock size={18} style={{ color: 'var(--teal)' }} /> Early Bird Availability
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {/* Option 1: By Date */}
+                <div 
+                  onClick={() => upd('earlyBirdLimitType', 'date')}
+                  style={{
+                    border: form.earlyBirdLimitType === 'date' ? '2px solid var(--teal)' : '1px solid var(--border)',
+                    borderRadius: '8px', padding: '16px', cursor: 'pointer',
+                    background: form.earlyBirdLimitType === 'date' ? 'var(--teal-dim)' : 'var(--bg-card-2)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                    <Calendar size={16} /> By Date
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    Early bird price available until a specific date.
+                  </div>
+                  {form.earlyBirdLimitType === 'date' && (
+                    <div className="form-group" style={{ marginTop: '1rem' }}>
+                      <label className="form-label">Early Bird End Date</label>
+                      <input type="date" className="form-input" 
+                        value={form.earlyBirdEndDate} onChange={(e) => upd('earlyBirdEndDate', e.target.value)} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Option 2: By Number of People */}
+                <div 
+                  onClick={() => upd('earlyBirdLimitType', 'people')}
+                  style={{
+                    border: form.earlyBirdLimitType === 'people' ? '2px solid var(--teal)' : '1px solid var(--border)',
+                    borderRadius: '8px', padding: '16px', cursor: 'pointer',
+                    background: form.earlyBirdLimitType === 'people' ? 'var(--teal-dim)' : 'var(--bg-card-2)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                    <Users size={16} /> By Number of People
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    First N customers get the early bird price.
+                  </div>
+                  {form.earlyBirdLimitType === 'people' && (
+                    <div className="form-group" style={{ marginTop: '1rem' }}>
+                      <label className="form-label">Number of Early Bird Tickets</label>
+                      <input type="number" className="form-input" min="1" placeholder="e.g. 50"
+                        value={form.earlyBirdLimitPeople} onChange={(e) => upd('earlyBirdLimitPeople', e.target.value)} />
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                        For example, if your event capacity is 100 and you enter 50, then the first 50 people to book get the early bird price. After 50 bookings, the price automatically switches to the standard price.
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Option 3: Manual Control */}
+                <div 
+                  onClick={() => upd('earlyBirdLimitType', 'manual')}
+                  style={{
+                    border: form.earlyBirdLimitType === 'manual' ? '2px solid var(--teal)' : '1px solid var(--border)',
+                    borderRadius: '8px', padding: '16px', cursor: 'pointer',
+                    background: form.earlyBirdLimitType === 'manual' ? 'var(--teal-dim)' : 'var(--bg-card-2)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                    <Settings size={16} /> Manual Control
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    You decide when to switch from early bird to standard pricing.
+                  </div>
+                  {form.earlyBirdLimitType === 'manual' && (
+                    <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-primary)', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
+                      Note: You can change the pricing from your event dashboard at any time.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
             <button className="btn-secondary" onClick={() => setStep(2)} type="button">← Back</button>
             <button className="btn-teal" onClick={handleNextStep} type="button">Next: Terms & Conditions →</button>
@@ -692,7 +782,7 @@ export default function CreateEvent() {
             borderRadius: '0.75rem', marginBottom: '1.25rem', cursor: 'pointer',
           }} onClick={() => upd('useDefaultTerms', !form.useDefaultTerms)}>
             <div>
-              <div style={{ fontWeight: 600, marginBottom: '0.2rem' }}>Use default EventSphere terms & conditions</div>
+              <div style={{ fontWeight: 600, marginBottom: '0.2rem' }}>Use default Tixque terms & conditions</div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 Covers general participation, safety, refund policy, and media consent
               </div>
@@ -720,7 +810,7 @@ export default function CreateEvent() {
                 ))}
               </div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '1rem' }}>
-                📋 These are EventSphere's standard terms. Toggle off above to write your own custom terms.
+                📋 These are Tixque's standard terms. Toggle off above to write your own custom terms.
               </div>
             </div>
           )}
