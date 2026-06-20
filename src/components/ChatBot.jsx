@@ -13,13 +13,13 @@ const QUICK_REPLIES = [
 function matchAttendeeKeyword(msg) {
   const m = msg.toLowerCase()
   if (m.includes('how to book') || m.includes('book a ticket') || m.includes('how do i book') || m.includes('booking process')) {
-    return `Here's how to book a ticket on Tixque 🎟️\n\n1️⃣ Browse events on the **Discover** feed\n2️⃣ Click on an event you like\n3️⃣ Click the **Book Now** button\n4️⃣ Review the payment breakdown (10% platform fee, 90% to organizer)\n5️⃣ Click **Pay Now** and complete payment via Razorpay\n6️⃣ Your ticket with QR code is generated instantly and sent to your email!`
+    return `Here's how to book a ticket on Tixque 🎟️\n\n1️⃣ Browse events on the **Discover** feed\n2️⃣ Click on an event you like\n3️⃣ Click the **Book Now** button\n4️⃣ Review the ticket price on the checkout page\n5️⃣ Click **Pay Now** and complete payment via Razorpay\n6️⃣ Your ticket with QR code is generated instantly and sent to your email!`
   }
   if (m.includes('my ticket') || m.includes('see my ticket') || m.includes('view ticket') || m.includes('where are my ticket')) {
     return `You can find all your tickets on the **My Tickets** page 🎫\n\nEach ticket shows a QR code you can use at the venue. You can also download or print any ticket from there!`
   }
   if (m.includes('payment fee') || m.includes('platform fee') || m.includes('how much fee') || m.includes('fee breakdown') || m.includes('payment info')) {
-    return `To see the ticket price for any event, visit the **Event Detail** page. The price shown is the full amount you pay — no surprises at checkout! 🎟️`
+    return `The ticket price you see on the event page is the exact amount you pay — no hidden charges or surprises at checkout! 🎟️`
   }
   if (m.includes('category') || m.includes('find event') || m.includes('filter') || m.includes('search') || m.includes('browse')) {
     return `Finding events is easy! 🔍\n\n• Use the **category tabs** (Tech, Art, Fitness, Cultural, etc.) on the Discover page\n• Use the **search bar** to search by event name\n• Use the **city filter** to find events near you\n• Scroll the **Trending** section for popular events!`
@@ -37,7 +37,7 @@ function matchAttendeeKeyword(msg) {
     return `Each event page shows the **Organizer Name**. For event-specific queries, look for contact details in the event description. For platform issues, reach us at support@tixque.in 📧`
   }
   if (m.includes('hello') || m.includes('hi') || m.includes('hey') || m.includes('help')) {
-    return `Hello! I'm Tixque's AI assistant 👋\n\nI can help you:\n• 🎟️ Book tickets step-by-step\n• 🔍 Find events by category or city\n• 💳 Understand payment fees\n• 📋 Manage your tickets & wishlist\n\nWhat would you like to know?`
+    return `Hello! I'm Tixque's AI assistant 👋\n\nI can help you:\n• 🎟️ Book tickets step-by-step\n• 🔍 Find events by category or city\n• 📋 Manage your tickets & wishlist\n\nWhat would you like to know?`
   }
   return null
 }

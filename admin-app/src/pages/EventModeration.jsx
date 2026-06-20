@@ -106,6 +106,8 @@ export default function EventModeration() {
         user_id: activeEvent.organizer_id,
         message: `Your event "${activeEvent.title}" requires changes. Admin note: ${adminNote}`,
         is_read: false,
+        event_id: activeEvent.id,
+        action_url: `/events/${activeEvent.id}`,
         created_at: new Date().toISOString()
       }])
       
@@ -138,6 +140,8 @@ export default function EventModeration() {
         user_id: activeEvent.organizer_id,
         message: `Your event "${activeEvent.title}" has been rejected. Reason: ${rejectReason}`,
         is_read: false,
+        event_id: activeEvent.id,
+        action_url: `/events/${activeEvent.id}`,
         created_at: new Date().toISOString()
       }])
 
