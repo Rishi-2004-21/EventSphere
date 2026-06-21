@@ -49,10 +49,19 @@ export default function OrganizerNavbar() {
         .select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
-        .limit(15)
+        .limit(30)
       if (data) {
-        setNotifications(data)
-        setUnreadCount(data.filter(n => !n.is_read).length)
+        // Deduplicate: keep only the most recent notification per unique message
+        const seen = new Set()
+        const unique = data.filter(n => {
+          // Normalise: trim + lowercase for comparison
+          const key = n.message.trim().toLowerCase()
+          if (seen.has(key)) return false
+          seen.add(key)
+          return true
+        }).slice(0, 15)
+        setNotifications(unique)
+        setUnreadCount(unique.filter(n => !n.is_read).length)
       }
     }
     fetchNotifs()
@@ -65,7 +74,12 @@ export default function OrganizerNavbar() {
         filter: `user_id=eq.${currentUser.id}`
       }, (payload) => {
         const newNotif = payload.new
-        setNotifications(prev => [newNotif, ...prev].slice(0, 15))
+        setNotifications(prev => {
+          // Don't add if an identical message already exists
+          const isDuplicate = prev.some(n => n.message.trim().toLowerCase() === newNotif.message.trim().toLowerCase())
+          if (isDuplicate) return prev
+          return [newNotif, ...prev].slice(0, 15)
+        })
         setUnreadCount(prev => prev + 1)
 
         if (newNotif.message.includes('rejected')) {
@@ -187,13 +201,7 @@ export default function OrganizerNavbar() {
               </button>
 
               {showNotifDropdown && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 10px)', right: 0,
-                  width: '340px', background: 'var(--color-bg-card)',
-                  border: '1px solid var(--color-border)', borderRadius: '12px',
-                  zIndex: 300, boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-                  maxHeight: '420px', overflowY: 'auto',
-                }}>
+                <div className="notif-dropdown">
                   {/* Header */}
                   <div style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -201,14 +209,27 @@ export default function OrganizerNavbar() {
                     position: 'sticky', top: 0, background: 'var(--color-bg-card)', zIndex: 1,
                   }}>
                     <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-text-primary)' }}>
-                      Notifications {unreadCount > 0 && <span style={{ color: 'var(--color-error)', fontWeight: 600, fontSize: '0.8rem' }}>({unreadCount} new)</span>}
+                      Notifications{unreadCount > 0 && <span style={{ color: 'var(--color-error)', fontWeight: 600, fontSize: '0.8rem', marginLeft: '6px' }}>({unreadCount} new)</span>}
                     </span>
-                    {unreadCount > 0 && (
-                      <button onClick={markAllAsRead} style={{
-                        background: 'none', border: 'none', color: 'var(--color-organizer-accent)',
-                        fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600,
-                      }}>Mark all read</button>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {unreadCount > 0 && (
+                        <button onClick={markAllAsRead} style={{
+                          background: 'none', border: 'none', color: 'var(--color-organizer-accent)',
+                          fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600,
+                        }}>Mark all read</button>
+                      )}
+                      <button
+                        onClick={() => setShowNotifDropdown(false)}
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+                          color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center',
+                          borderRadius: '50%', lineHeight: 1,
+                        }}
+                        aria-label="Close notifications"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Notification list */}
@@ -218,7 +239,6 @@ export default function OrganizerNavbar() {
                     </div>
                   ) : (
                     notifications.map(notif => {
-                      // Determine dot color by message content
                       let dotColor = 'var(--color-success)'
                       if (notif.message.toLowerCase().includes('rejected')) dotColor = 'var(--color-error)'
                       else if (notif.message.toLowerCase().includes('requires changes') || notif.message.toLowerCase().includes('changes requested')) dotColor = 'var(--color-warning)'
@@ -231,8 +251,8 @@ export default function OrganizerNavbar() {
                           key={notif.id}
                           onClick={() => handleNotifClick(notif)}
                           style={{
-                            display: 'flex', alignItems: 'flex-start', gap: '12px',
-                            padding: '12px 16px', borderBottom: '1px solid var(--color-border)',
+                            display: 'flex', alignItems: 'flex-start', gap: '10px',
+                            padding: '14px 16px', borderBottom: '1px solid var(--color-border)',
                             cursor: isClickable ? 'pointer' : 'default',
                             background: notif.is_read ? 'transparent' : 'rgba(8,145,178,0.06)',
                             transition: 'background 0.15s',
@@ -242,29 +262,29 @@ export default function OrganizerNavbar() {
                         >
                           {/* Colored dot */}
                           <div style={{
-                            width: '10px', height: '10px', borderRadius: '50%',
-                            background: dotColor, marginTop: '4px', flexShrink: 0,
+                            width: '8px', height: '8px', borderRadius: '50%',
+                            background: dotColor, marginTop: '6px', flexShrink: 0,
                           }} />
 
                           {/* Content */}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{
-                              fontSize: '14px', color: 'var(--color-text-primary)',
-                              lineHeight: 1.5, wordBreak: 'break-word',
+                              fontSize: '13px', color: 'var(--color-text-primary)',
+                              lineHeight: 1.5, wordBreak: 'break-word', overflowWrap: 'break-word',
                               fontWeight: notif.is_read ? 400 : 600,
                             }}>
                               {notif.message}
                             </div>
                             <div
-                              style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px', cursor: 'help' }}
+                              style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px', cursor: 'help' }}
                               title={new Date(notif.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                             >
                               {relativeTime(notif.created_at)}
-                              {isClickable && <span style={{ marginLeft: '6px', color: 'var(--color-organizer-accent)', fontSize: '11px' }}>→ View event</span>}
+                              {isClickable && <span style={{ marginLeft: '6px', color: 'var(--color-organizer-accent)', fontSize: '11px' }}>→ View</span>}
                             </div>
                           </div>
 
-                          {/* Unread indicator */}
+                          {/* Unread dot */}
                           {!notif.is_read && (
                             <div style={{
                               width: '6px', height: '6px', borderRadius: '50%',
